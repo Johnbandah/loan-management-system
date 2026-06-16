@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loan Management System - Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        button { margin: 5px; padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+        pre { background: #f0f0f0; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Loan Management System</h1>
+        <h2>Customer Management</h2>
+        
+        <div>
+            <h3>Create New Customer:</h3>
+            <input type="text" id="name" placeholder="Full Name" value="John Doe">
+            <input type="email" id="email" placeholder="Email" value="john@example.com">
+            <input type="text" id="phone" placeholder="Phone" value="1234567890">
+            <br>
+            <input type="text" id="address" placeholder="Address" value="123 Main St">
+            <input type="text" id="pan" placeholder="PAN Number" value="ABCDE1234F">
+            <input type="number" id="creditScore" placeholder="Credit Score" value="750">
+            <br><br>
+            <button onclick="createCustomer()">➕ Create Customer</button>
+        </div>
+        
+        <hr>
+        
+        <button onclick="getCustomers()">📋 Get All Customers</button>
+        <button onclick="getCustomerById()">🔍 Get Customer by ID</button>
+        <input type="number" id="customerId" placeholder="Customer ID" value="1">
+        
+        <h3>Response:</h3>
+        <pre id="response">Click a button to see results...</pre>
+    </div>
+
+    <script>
+        async function getCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                const data = await response.json();
+                document.getElementById('response').innerHTML = JSON.stringify(data, null, 2);
+                document.getElementById('response').className = 'success';
+            } catch(error) {
+                document.getElementById('response').innerHTML = 'Error: ' + error.message;
+                document.getElementById('response').className = 'error';
+            }
+        }
+        
+        async function createCustomer() {
+            const customer = {
+                fullName: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+                panNumber: document.getElementById('pan').value,
+                creditScore: parseInt(document.getElementById('creditScore').value)
+            };
+            
+            try {
+                const response = await fetch('/api/customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(customer)
+                });
+                const data = await response.json();
+                document.getElementById('response').innerHTML = JSON.stringify(data, null, 2);
+                document.getElementById('response').className = 'success';
+                getCustomers(); // Refresh the list
+            } catch(error) {
+                document.getElementById('response').innerHTML = 'Error: ' + error.message;
+                document.getElementById('response').className = 'error';
+            }
+        }
+        
+        async function getCustomerById() {
+            const id = document.getElementById('customerId').value;
+            try {
+                const response = await fetch('/api/customers/' + id);
+                if(response.status === 404) {
+                    document.getElementById('response').innerHTML = 'Customer not found with ID: ' + id;
+                    document.getElementById('response').className = 'error';
+                } else {
+                    const data = await response.json();
+                    document.getElementById('response').innerHTML = JSON.stringify(data, null, 2);
+                    document.getElementById('response').className = 'success';
+                }
+            } catch(error) {
+                document.getElementById('response').innerHTML = 'Error: ' + error.message;
+                document.getElementById('response').className = 'error';
+            }
+        }
+        
+        // Load customers automatically when page loads
+        getCustomers();
+    </script>
+</body>
+</html>

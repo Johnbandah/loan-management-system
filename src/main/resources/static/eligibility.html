@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Eligibility Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        .card-custom {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .result-card.rejected {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .result-card.warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        .offer-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.3s;
+        }
+        .offer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-apply {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+        }
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <i class="fas fa-calculator"></i> Loan Eligibility Calculator
+                        <a href="/dashboard.html" class="btn btn-outline-light float-end btn-sm">Back to Dashboard</a>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="eligibilityForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label"><i class="fas fa-chart-line"></i> Credit Score</label>
+                                    <input type="number" id="creditScore" class="form-control" placeholder="Enter credit score (300-850)" required>
+                                    <small class="text-muted">Minimum required: 600</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label"><i class="fas fa-money-bill-wave"></i> Monthly Income (MWK)</label>
+                                    <input type="number" id="monthlyIncome" class="form-control" placeholder="Enter monthly income" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label"><i class="fas fa-hand-holding-usd"></i> Requested Amount (MWK)</label>
+                                    <input type="number" id="requestedAmount" class="form-control" placeholder="Enter loan amount" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label"><i class="fas fa-tag"></i> Loan Type</label>
+                                    <select id="loanType" class="form-select">
+                                        <option value="PERSONAL">Personal Loan</option>
+                                        <option value="HOME">Home Loan</option>
+                                        <option value="AUTO">Auto Loan</option>
+                                        <option value="EDUCATION">Education Loan</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-apply btn-lg">
+                                    <i class="fas fa-check-circle"></i> Check Eligibility
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="resultContainer" style="display:none;">
+                            <div id="eligibilityResult"></div>
+                            <div id="offersSection" style="display:none;">
+                                <h4 class="mt-4"><i class="fas fa-gift"></i> Recommended Loan Offers</h4>
+                                <div id="offersList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('eligibilityForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const creditScore = parseInt(document.getElementById('creditScore').value);
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
+            const requestedAmount = parseFloat(document.getElementById('requestedAmount').value);
+            const loanType = document.getElementById('loanType').value;
+            
+            // Validate inputs
+            if (!creditScore || !monthlyIncome || !requestedAmount) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('eligibilityResult').innerHTML = '<div class="text-center"><div class="spinner-border text-primary"></div><p>Checking eligibility...</p></div>';
+            document.getElementById('offersSection').style.display = 'none';
+            
+            // Check eligibility
+            try {
+                const response = await fetch('/api/eligibility/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ creditScore, monthlyIncome, requestedAmount, loanType })
+                });
+                const result = await response.json();
+                
+                // Display eligibility result
+                let resultHtml = '';
+                if (result.eligible) {
+                    resultHtml = `
+                        <div class="result-card">
+                            <h3><i class="fas fa-check-circle"></i> Congratulations! You are Eligible!</h3>
+                            <hr>
+                            <p><strong>Credit Rating:</strong> ${result.creditRating}</p>
+                            <p><strong>Interest Rate:</strong> ${result.interestRate}%</p>
+                            <p><strong>Maximum Eligible Amount:</strong> MWK ${formatMoney(result.maxEligibleAmount)}</p>
+                            <p><strong>Requested Amount:</strong> MWK ${formatMoney(result.requestedAmount)}</p>
+                            <div class="mt-3">
+                                ${result.messages.map(msg => `<div class="alert alert-light">${msg}</div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    // Load loan offers
+                    await loadLoanOffers(requestedAmount, creditScore);
+                } else {
+                    resultHtml = `
+                        <div class="result-card rejected">
+                            <h3><i class="fas fa-times-circle"></i> Not Eligible at this time</h3>
+                            <hr>
+                            <p><strong>Credit Rating:</strong> ${result.creditRating}</p>
+                            <p><strong>Requested Amount:</strong> MWK ${formatMoney(result.requestedAmount)}</p>
+                            <p><strong>Maximum Eligible:</strong> MWK ${formatMoney(result.maxEligibleAmount)}</p>
+                            <div class="mt-3">
+                                ${result.messages.map(msg => `<div class="alert alert-light">${msg}</div>`).join('')}
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-lightbulb"></i> Tips to improve eligibility:<br>
+                                - Improve your credit score<br>
+                                - Reduce requested loan amount<br>
+                                - Consider a longer tenure<br>
+                                - Increase down payment
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('offersSection').style.display = 'none';
+                }
+                document.getElementById('eligibilityResult').innerHTML = resultHtml;
+            } catch(e) {
+                document.getElementById('eligibilityResult').innerHTML = '<div class="alert alert-danger">Error checking eligibility</div>';
+            }
+        });
+        
+        async function loadLoanOffers(loanAmount, creditScore) {
+            try {
+                const response = await fetch(`/api/eligibility/offers?loanAmount=${loanAmount}&creditScore=${creditScore}`);
+                const offers = await response.json();
+                
+                let offersHtml = '<div class="row">';
+                offers.forEach(offer => {
+                    offersHtml += `
+                        <div class="col-md-6">
+                            <div class="offer-card">
+                                <h5><i class="fas fa-calendar-alt"></i> ${offer.tenureMonths} Months</h5>
+                                <hr>
+                                <p><strong>Monthly EMI:</strong> MWK ${formatMoney(offer.monthlyEMI)}</p>
+                                <p><strong>Total Payable:</strong> MWK ${formatMoney(offer.totalPayable)}</p>
+                                <p><strong>Total Interest:</strong> MWK ${formatMoney(offer.totalInterest)}</p>
+                                <p><strong>Interest Rate:</strong> ${offer.interestRate}%</p>
+                                <button class="btn btn-sm btn-primary mt-2" onclick="applyNow('${loanAmount}', '${offer.tenureMonths}', '${offer.interestRate}')">
+                                    <i class="fas fa-paper-plane"></i> Apply Now
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                offersHtml += '</div>';
+                document.getElementById('offersList').innerHTML = offersHtml;
+                document.getElementById('offersSection').style.display = 'block';
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function formatMoney(amount) {
+            if (!amount) return '0';
+            return parseFloat(amount).toLocaleString();
+        }
+        
+        function applyNow(amount, tenure, rate) {
+            alert(`Apply for loan:\nAmount: MWK ${formatMoney(amount)}\nTenure: ${tenure} months\nInterest: ${rate}%\n\nPlease go to "Apply Loan" section to complete application.`);
+            window.location.href = '/dashboard.html';
+        }
+        
+        // Load credit score info on input
+        document.getElementById('creditScore').addEventListener('input', async function() {
+            const creditScore = parseInt(this.value);
+            if (creditScore && creditScore >= 300 && creditScore <= 850) {
+                try {
+                    const response = await fetch(`/api/eligibility/credit-score-info?creditScore=${creditScore}`);
+                    const info = await response.json();
+                    const infoHtml = `
+                        <div class="alert alert-${info.color} mt-2">
+                            <strong>${info.rating} Credit Score</strong><br>
+                            ${info.description}<br>
+                            ${info.interestRate ? `Estimated Interest Rate: ${info.interestRate}%` : `Minimum Required: ${info.minRequired}`}
+                        </div>
+                    `;
+                    // Display info below credit score field
+                    let existingInfo = document.getElementById('creditScoreInfo');
+                    if (!existingInfo) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.id = 'creditScoreInfo';
+                        document.getElementById('creditScore').parentNode.appendChild(infoDiv);
+                        existingInfo = infoDiv;
+                    }
+                    existingInfo.innerHTML = infoHtml;
+                } catch(e) {}
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Statement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .statement-container {
+                margin: 0;
+                padding: 0;
+            }
+        }
+        
+        body {
+            background: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .statement-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2a5298;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #1e3c72;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            margin: 0;
+        }
+        
+        .loan-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .status-badge {
+            background: #27ae60;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-badge.closed {
+            background: #e74c3c;
+        }
+        
+        .table th {
+            background: #1e3c72;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-btn no-print">
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print / Save as PDF
+        </button>
+        <button class="btn btn-secondary" onclick="window.close()">
+            <i class="fas fa-times"></i> Close
+        </button>
+    </div>
+    
+    <div class="statement-container">
+        <div class="statement-card" id="statementContent">
+            <div class="header">
+                <h1><i class="fas fa-landmark"></i> Loan Management System</h1>
+                <p>Official Loan Statement</p>
+            </div>
+            
+            <div id="statementData">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading statement...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get loan ID from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const loanId = urlParams.get('loanId');
+        
+        if (!loanId) {
+            document.getElementById('statementData').innerHTML = '<div class="alert alert-danger">No loan ID provided</div>';
+        } else {
+            loadStatement(loanId);
+        }
+        
+        async function loadStatement(loanId) {
+            try {
+                const response = await fetch(`/api/repayments/statement/${loanId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayStatement(data);
+                } else {
+                    document.getElementById('statementData').innerHTML = `<div class="alert alert-danger">${data.error || 'Error loading statement'}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('statementData').innerHTML = '<div class="alert alert-danger">Error loading statement</div>';
+            }
+        }
+        
+        function displayStatement(data) {
+            const statusClass = data.loanStatus === 'CLOSED' ? 'status-badge closed' : 'status-badge';
+            const statusText = data.loanStatus === 'CLOSED' ? 'PAID / CLOSED' : data.loanStatus;
+            
+            let paymentHistoryHtml = '';
+            if (data.paymentHistory && data.paymentHistory.length > 0) {
+                paymentHistoryHtml = '<h4>Payment History</h4><table class="table table-bordered"><thead><tr><th>#</th><th>Due Date</th><th>Amount Due</th><th>Paid Date</th><th>Amount Paid</th><th>Status</th><th>Reference</th></tr></thead><tbody>';
+                
+                data.paymentHistory.forEach(p => {
+                    const statusBadge = p.status === 'PAID' ? '<span class="badge bg-success">PAID</span>' : '<span class="badge bg-warning">PENDING</span>';
+                    paymentHistoryHtml += `<tr>
+                        <td>${p.installmentNumber}</td>
+                        <td>${new Date(p.dueDate).toLocaleDateString()}</td>
+                        <td>MWK ${p.amountDue.toLocaleString()}</td>
+                        <td>${p.paidDate ? new Date(p.paidDate).toLocaleDateString() : '-'}</td>
+                        <td>MWK ${p.amountPaid ? p.amountPaid.toLocaleString() : '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${p.transactionReference || '-'}</td>
+                    </tr>`;
+                });
+                paymentHistoryHtml += '</tbody></table>';
+            } else {
+                paymentHistoryHtml = '<p>No payment history available.</p>';
+            }
+            
+            const html = `
+                <div class="loan-info">
+                    <div class="info-row">
+                        <strong>Loan ID:</strong> <span>${data.loanId}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Customer Name:</strong> <span>${data.customerName}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Customer Email:</strong> <span>${data.customerEmail}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Customer Phone:</strong> <span>${data.customerPhone}</span>
+                    </div>
+                    <div class="info-row">
+                        <strong>Loan Status:</strong> <span class="${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h6>Loan Amount</h6>
+                                <h4>MWK ${data.loanAmount.toLocaleString()}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h6>Amount Paid</h6>
+                                <h4>MWK ${data.amountPaid.toLocaleString()}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h6>Remaining</h6>
+                                <h4>MWK ${data.remainingBalance.toLocaleString()}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h6>Monthly EMI</h6>
+                                <h4>MWK ${data.emiAmount.toLocaleString()}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table table-bordered table-sm">
+                            <tr><td><strong>Interest Rate:</strong></td><td>${data.interestRate}%</td></tr>
+                            <tr><td><strong>Tenure:</strong></td><td>${data.tenureMonths} months</td></tr>
+                            <tr><td><strong>Application Date:</strong></td><td>${new Date(data.applicationDate).toLocaleDateString()}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-bordered table-sm">
+                            <tr><td><strong>Total Payable:</strong></td><td>MWK ${data.totalPayable.toLocaleString()}</td></tr>
+                            <tr><td><strong>Approval Date:</strong></td><td>${data.approvalDate ? new Date(data.approvalDate).toLocaleDateString() : '-'}</td></tr>
+                            <tr><td><strong>Progress:</strong></td><td>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${(data.amountPaid / data.totalPayable * 100).toFixed(1)}%">
+                                        ${(data.amountPaid / data.totalPayable * 100).toFixed(1)}%
+                                    </div>
+                                </div>
+                            </td></tr>
+                        </table>
+                    </div>
+                </div>
+                
+                ${paymentHistoryHtml}
+                
+                <div class="footer">
+                    <p>This is a computer-generated statement. No signature is required.</p>
+                    <p>Generated on: ${new Date().toLocaleString()}</p>
+                </div>
+            `;
+            
+            document.getElementById('statementData').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

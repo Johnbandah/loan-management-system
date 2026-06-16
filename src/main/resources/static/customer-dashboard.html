@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Loan Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; }
+        
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar h3 { text-align: center; margin-bottom: 30px; font-weight: 600; }
+        .sidebar h3 i { margin-right: 10px; }
+        .sidebar .nav-link { color: white; padding: 12px 25px; margin: 5px 0; transition: all 0.3s; font-weight: 500; cursor: pointer; display: block; text-decoration: none; }
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.1); padding-left: 35px; }
+        .sidebar .nav-link i { margin-right: 12px; width: 20px; }
+        .sidebar .nav-link.active { background: rgba(255,255,255,0.2); border-left: 4px solid #fff; }
+        
+        .main-content { margin-left: 260px; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header h1 { color: #1e3c72; font-size: 24px; }
+        
+        .stat-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.3s; text-align: left; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-card .icon { font-size: 40px; float: right; opacity: 0.7; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #1e3c72; margin-bottom: 5px; }
+        .stat-card .label { color: #7f8c8d; font-size: 13px; }
+        
+        .card-custom { background: white; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header-custom { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 15px 20px; font-weight: 600; }
+        .card-header-custom i { margin-right: 10px; }
+        .card-body { padding: 20px; }
+        
+        .form-label { font-weight: 500; color: #333; margin-bottom: 5px; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #ddd; padding: 10px; }
+        .btn-primary { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
+        .btn-success { background: #28a745; border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
+        .btn-info { background: #17a2b8; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; color: white; }
+        
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
+        .table thead { background: #f8f9fa; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        .badge-approved { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-pending { background: #ffc107; color: #856404; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-success { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .reminder-urgent { background: #e74c3c; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .reminder-warning { background: #f39c12; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .reminder-info { background: #3498db; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        
+        .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3><i class="fas fa-landmark"></i> <span>LMS</span></h3>
+    <nav class="nav flex-column">
+        <a class="nav-link active" onclick="showSection('overview')"><i class="fas fa-tachometer-alt"></i> <span>Overview</span></a>
+        <a class="nav-link" onclick="showSection('loans')"><i class="fas fa-hand-holding-usd"></i> <span>My Loans</span></a>
+        <a class="nav-link" onclick="showSection('payments')"><i class="fas fa-mobile-alt"></i> <span>Make Payment</span></a>
+        <a class="nav-link" onclick="showSection('history')"><i class="fas fa-history"></i> <span>Payment History</span></a>
+        <a class="nav-link" onclick="showSection('reminders')"><i class="fas fa-bell"></i> <span>Payment Reminders</span></a>
+    </nav>
+    <div class="logout-btn">
+        <a class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Customer Dashboard</h1>
+        <p class="mb-0 text-muted">Welcome back, <span id="welcomeName"></span>!</p>
+    </div>
+    
+    <!-- Overview Section with Stats -->
+    <div id="overviewSection" class="section">
+        <div class="row">
+            <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-hand-holding-usd icon" style="color: #2a5298;"></i><div class="number" id="totalLoanAmount">MWK 0</div><div class="label">Total Loan Amount</div></div></div>
+            <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-money-bill-wave icon" style="color: #28a745;"></i><div class="number" id="totalPaid">MWK 0</div><div class="label">Total Paid</div></div></div>
+            <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-clock icon" style="color: #e74c3c;"></i><div class="number" id="remainingBalance">MWK 0</div><div class="label">Remaining Balance</div></div></div>
+            <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-calendar-alt icon" style="color: #f39c12;"></i><div class="number" id="nextPayment">-</div><div class="label">Next Payment Due</div></div></div>
+        </div>
+    </div>
+    
+    <!-- My Loans Section -->
+    <div id="loansSection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-list"></i> My Loans</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Loan ID</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="myLoansTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Make Payment Section -->
+    <div id="paymentsSection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-mobile-alt"></i> Pay with Mobile Money</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Select Loan</label>
+                        <select id="payLoanId" class="form-select" onchange="loadInstallments()">
+                            <option value="">-- Select a loan --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Select Installment</label>
+                        <select id="payInstallment" class="form-select">
+                            <option value="">-- Select installment --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Mobile Number</label>
+                        <input type="tel" id="mobileNumber" class="form-control" placeholder="0999 123 456" value="0999123456">
+                        <small class="text-muted">Enter 10-digit mobile number</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Payment Provider</label>
+                        <select id="provider" class="form-select">
+                            <option value="AIRTEL_MONEY">Airtel Money</option>
+                            <option value="TNM_MPAMBA">TNM Mpamba</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <button class="btn btn-success w-100" onclick="payWithMobileMoney()">
+                            <i class="fas fa-mobile-alt"></i> Pay Now
+                        </button>
+                    </div>
+                </div>
+                <div id="mobilePaymentMsg" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment History Section -->
+    <div id="historySection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-history"></i> Payment History</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Transaction ID</th><th>Amount (MWK)</th><th>Provider</th><th>Status</th><th>Date</th><th>Receipt</th></tr></thead>
+                        <tbody id="paymentHistoryTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Reminders Section -->
+    <div id="remindersSection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-bell"></i> Payment Reminders</div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You will receive email reminders for:
+                    <ul class="mt-2 mb-0">
+                        <li>📧 7 days before payment due date</li>
+                        <li>⚠️ 3 days before payment due date (Urgent)</li>
+                        <li>❗ When payment becomes overdue</li>
+                    </ul>
+                </div>
+                <div id="remindersList" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentCustomerId = null;
+
+    function showSection(section) {
+        let sections = ['overview', 'loans', 'payments', 'history', 'reminders'];
+        for (let i = 0; i < sections.length; i++) {
+            let sec = sections[i] + 'Section';
+            if (document.getElementById(sec)) {
+                document.getElementById(sec).style.display = 'none';
+            }
+        }
+        let targetSection = document.getElementById(section + 'Section');
+        if (targetSection) {
+            targetSection.style.display = 'block';
+        }
+        
+        let navLinks = document.querySelectorAll('.sidebar .nav-link');
+        for (let i = 0; i < navLinks.length; i++) {
+            navLinks[i].classList.remove('active');
+        }
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
+        
+        if (section === 'overview') loadOverview();
+        if (section === 'loans') loadLoans();
+        if (section === 'payments') loadLoansForPayment();
+        if (section === 'history') loadPaymentHistory();
+        if (section === 'reminders') loadReminders();
+    }
+    
+    function formatMoney(amount) {
+        if (!amount || amount === 0) return '0';
+        return amount.toLocaleString();
+    }
+    
+    async function loadOverview() {
+        try {
+            let response = await fetch('/api/loans/customer/' + currentCustomerId);
+            let loans = await response.json();
+            
+            let totalLoan = 0, totalPaid = 0, remaining = 0, nextDate = null;
+            
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                totalLoan += loan.loanAmount;
+                totalPaid += loan.amountPaid || 0;
+                remaining += loan.remainingBalance || (loan.totalPayable - (loan.amountPaid || 0));
+                
+                let histRes = await fetch('/api/repayments/history/' + loan.id);
+                let history = await histRes.json();
+                for (let j = 0; j < history.length; j++) {
+                    if (history[j].status === 'PENDING' && !nextDate) {
+                        nextDate = history[j].dueDate;
+                        break;
+                    }
+                }
+            }
+            
+            document.getElementById('totalLoanAmount').innerHTML = 'MWK ' + formatMoney(totalLoan);
+            document.getElementById('totalPaid').innerHTML = 'MWK ' + formatMoney(totalPaid);
+            document.getElementById('remainingBalance').innerHTML = 'MWK ' + formatMoney(remaining);
+            document.getElementById('nextPayment').innerHTML = nextDate ? new Date(nextDate).toLocaleDateString() : 'No pending';
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadLoans() {
+        try {
+            let response = await fetch('/api/loans/customer/' + currentCustomerId);
+            let loans = await response.json();
+            let tbody = document.getElementById('myLoansTbody');
+            tbody.innerHTML = '';
+            
+            if (loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found<\/td><\/tr>';
+                return;
+            }
+            
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                let statusClass = loan.status === 'APPROVED' ? 'badge-approved' : 'badge-pending';
+                let row = '<tr>' +
+                    '<td>' + loan.id + '</td>' +
+                    '<td>MWK ' + formatMoney(loan.loanAmount) + '</td>' +
+                    '<td>' + loan.tenureMonths + ' months<\/td>' +
+                    '<td>MWK ' + formatMoney(loan.emiAmount) + '<\/td>' +
+                    '<td><span class="' + statusClass + '">' + loan.status + '<\/span><\/td>' +
+                    '<td><button class="btn btn-info btn-sm" onclick="window.open(\'/statement.html?loanId=' + loan.id + '\', \'_blank\')">Statement<\/button><\/td>' +
+                '<\/tr>';
+                tbody.innerHTML += row;
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadLoansForPayment() {
+        try {
+            let response = await fetch('/api/loans/customer/' + currentCustomerId);
+            let loans = await response.json();
+            let select = document.getElementById('payLoanId');
+            select.innerHTML = '<option value="">-- Select a loan --</option>';
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                if (loan.status === 'APPROVED') {
+                    select.innerHTML += '<option value="' + loan.id + '">Loan #' + loan.id + ' - MWK ' + formatMoney(loan.loanAmount) + '<\/option>';
+                }
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadInstallments() {
+        let loanId = document.getElementById('payLoanId').value;
+        if (!loanId) return;
+        
+        try {
+            let response = await fetch('/api/repayments/history/' + loanId);
+            let history = await response.json();
+            let select = document.getElementById('payInstallment');
+            select.innerHTML = '<option value="">-- Select installment --</option>';
+            for (let i = 0; i < history.length; i++) {
+                let p = history[i];
+                if (p.status === 'PENDING') {
+                    select.innerHTML += '<option value="' + p.installmentNumber + '">Installment #' + p.installmentNumber + ' - Due: ' + new Date(p.dueDate).toLocaleDateString() + ' - MWK ' + formatMoney(p.amountDue) + '<\/option>';
+                }
+            }
+            if (select.options.length === 1) {
+                select.innerHTML = '<option value="">No pending installments</option>';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function payWithMobileMoney() {
+        let loanId = document.getElementById('payLoanId').value;
+        let installmentNumber = document.getElementById('payInstallment').value;
+        let mobileNumber = document.getElementById('mobileNumber').value;
+        let provider = document.getElementById('provider').value;
+        
+        if (!loanId || !installmentNumber) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please select loan and installment</div>';
+            return;
+        }
+        
+        if (!mobileNumber) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please enter mobile number</div>';
+            return;
+        }
+        
+        if (!/^[0-9]{10}$/.test(mobileNumber)) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please enter a valid 10-digit mobile number</div>';
+            return;
+        }
+        
+        document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-info">Processing payment request...</div>';
+        
+        try {
+            let response = await fetch('/api/mobile-payment/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: currentCustomerId,
+                    loanId: parseInt(loanId),
+                    installmentNumber: parseInt(installmentNumber),
+                    mobileNumber: mobileNumber,
+                    provider: provider
+                })
+            });
+            let data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-success">' + data.message + '<br>Transaction ID: ' + data.transactionId + '<br>Amount: MWK ' + formatMoney(data.amount) + '<\/div>';
+                setTimeout(function() { location.reload(); }, 3000);
+            } else {
+                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">' + data.message + '<\/div>';
+            }
+        } catch(e) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Payment request failed<\/div>';
+        }
+    }
+    
+    async function loadPaymentHistory() {
+        try {
+            let response = await fetch('/api/mobile-payment/history/' + currentCustomerId);
+            let history = await response.json();
+            let tbody = document.getElementById('paymentHistoryTbody');
+            tbody.innerHTML = '';
+            
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No payment history found<\/td><\/tr>';
+                return;
+            }
+            
+            for (let i = 0; i < history.length; i++) {
+                let p = history[i];
+                let row = '<tr>' +
+                    '<td>' + p.transactionId + '<\/td>' +
+                    '<td>MWK ' + formatMoney(p.amount) + '<\/td>' +
+                    '<td>' + (p.provider === 'AIRTEL_MONEY' ? 'Airtel Money' : 'TNM Mpamba') + '<\/td>' +
+                    '<td><span class="badge-success">' + p.status + '<\/span><\/td>' +
+                    '<td>' + new Date(p.requestedAt).toLocaleString() + '<\/td>' +
+                    '<td><button class="btn btn-info btn-sm" onclick="downloadReceipt(' + p.id + ')">Receipt<\/button><\/td>' +
+                '<\/tr>';
+                tbody.innerHTML += row;
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadReminders() {
+        try {
+            let response = await fetch('/api/loans/customer/' + currentCustomerId);
+            let loans = await response.json();
+            let remindersHtml = '';
+            let hasReminders = false;
+            
+            for (let i = 0; i < loans.length; i++) {
+                let loan = loans[i];
+                let historyRes = await fetch('/api/repayments/history/' + loan.id);
+                let history = await historyRes.json();
+                let now = new Date();
+                
+                for (let j = 0; j < history.length; j++) {
+                    let repayment = history[j];
+                    if (repayment.status === 'PENDING') {
+                        let dueDate = new Date(repayment.dueDate);
+                        let daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                        let daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysUntil >= 0 && daysUntil <= 30) {
+                            hasReminders = true;
+                            let priorityClass = '';
+                            let priorityText = '';
+                            
+                            if (daysUntil <= 3) {
+                                priorityClass = 'reminder-urgent';
+                                priorityText = 'URGENT - Due in ' + daysUntil + ' days';
+                            } else if (daysUntil <= 7) {
+                                priorityClass = 'reminder-warning';
+                                priorityText = 'Due in ' + daysUntil + ' days';
+                            } else {
+                                priorityClass = 'reminder-info';
+                                priorityText = 'Due in ' + daysUntil + ' days';
+                            }
+                            
+                            remindersHtml += '<div class="card mb-2"><div class="card-body"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
+                                '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
+                                '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
+                                '<div class="col-md-2"><span class="' + priorityClass + '">' + priorityText + '</span></div></div></div></div>';
+                        } else if (daysOverdue > 0) {
+                            hasReminders = true;
+                            remindersHtml += '<div class="card mb-2 border-danger"><div class="card-body bg-light"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
+                                '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
+                                '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
+                                '<div class="col-md-2"><span class="reminder-urgent">OVERDUE by ' + daysOverdue + ' days</span></div></div></div></div>';
+                        }
+                    }
+                }
+            }
+            
+            if (!hasReminders) {
+                remindersHtml = '<div class="alert alert-success">No upcoming payments! You are all caught up.</div>';
+            }
+            
+            document.getElementById('remindersList').innerHTML = remindersHtml;
+        } catch(e) { console.error(e); }
+    }
+    
+    function downloadReceipt(paymentId) {
+        window.open('/api/receipts/payment/' + paymentId, '_blank');
+    }
+    
+    async function logout() {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        window.location.href = '/customer-dashboard.html';
+    }
+    
+    async function initDashboard() {
+        try {
+            let response = await fetch('/api/auth/me');
+            let data = await response.json();
+            
+            if (data.loggedIn) {
+                currentCustomerId = data.customerId;
+                document.getElementById('welcomeName').innerText = data.customerName;
+                loadOverview();
+            } else {
+                window.location.href = '/customer-dashboard.html';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    initDashboard();
+</script>
+</body>
+</html>
