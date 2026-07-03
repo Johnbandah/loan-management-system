@@ -3,46 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan Management System</title>
+    <title>Admin Dashboard - Loan Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; }
-        .sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100%; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
+        
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
         .sidebar h3 { text-align: center; margin-bottom: 30px; font-weight: 600; }
         .sidebar h3 i { margin-right: 10px; }
         .sidebar .nav-link { color: white; padding: 12px 25px; margin: 5px 0; transition: all 0.3s; font-weight: 500; cursor: pointer; display: block; text-decoration: none; }
         .sidebar .nav-link:hover { background: rgba(255,255,255,0.1); padding-left: 35px; }
         .sidebar .nav-link i { margin-right: 12px; width: 20px; }
+        .sidebar .nav-link.active { background: rgba(255,255,255,0.2); border-left: 4px solid #fff; }
+        
         .main-content { margin-left: 260px; padding: 20px; }
         .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .header h1 { color: #1e3c72; font-size: 24px; }
-        .stat-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.3s; }
+        
+        .stat-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.3s; text-align: left; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .stat-card .icon { font-size: 40px; color: #2a5298; float: right; }
-        .stat-card .number { font-size: 32px; font-weight: bold; color: #1e3c72; }
-        .stat-card .label { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
+        .stat-card .icon { font-size: 40px; float: right; opacity: 0.7; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #1e3c72; margin-bottom: 5px; }
+        .stat-card .label { color: #7f8c8d; font-size: 13px; }
+        
         .card-custom { background: white; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
         .card-header-custom { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 15px 20px; font-weight: 600; }
         .card-header-custom i { margin-right: 10px; }
         .card-body { padding: 20px; }
+        
         .form-label { font-weight: 500; color: #333; margin-bottom: 5px; }
         .form-control, .form-select { border-radius: 8px; border: 1px solid #ddd; padding: 10px; }
-        .btn-primary { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none; border-radius: 8px; padding: 10px 25px; font-weight: 500; color: white; }
+        .btn-primary { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
         .btn-success { background: #28a745; border: none; border-radius: 6px; padding: 5px 15px; font-size: 12px; color: white; }
         .btn-danger { background: #dc3545; border: none; border-radius: 6px; padding: 5px 15px; font-size: 12px; color: white; }
         .btn-info { background: #17a2b8; border: none; border-radius: 6px; padding: 8px 20px; font-size: 14px; color: white; }
-        .table { margin-bottom: 0; }
+        .btn-warning { background: #f39c12; border: none; border-radius: 6px; padding: 5px 15px; font-size: 12px; color: white; }
+        
+        .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table thead { background: #f8f9fa; }
-        .badge-pending { background: #ffc107; color: #856404; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        .badge-approved { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        .badge-verified { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-        .badge-rejected { background: #dc3545; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        
+        .badge-pending { background: #ffc107; color: #856404; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-approved { background: #28a745; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-active { background: #17a2b8; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-closed { background: #6c757d; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        .badge-rejected { background: #dc3545; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; }
+        
         .progress { height: 20px; border-radius: 10px; }
         .progress-bar { background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); border-radius: 10px; }
-        .nav-tabs .nav-link { color: #1e3c72; cursor: pointer; }
-        .nav-tabs .nav-link.active { color: #2a5298; font-weight: bold; }
+        
+        .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar span { display: none; }
+            .main-content { margin-left: 70px; }
+        }
     </style>
 </head>
 <body>
@@ -50,52 +79,88 @@
 <div class="sidebar">
     <h3><i class="fas fa-landmark"></i> <span>LMS</span></h3>
     <nav class="nav flex-column">
-        <a class="nav-link" href="/customer-dashboard.html">
-    <i class="fas fa-users"></i> <span>Customer Portal</span>
-</a>
-        <a class="nav-link" onclick="showSection('customers')"><i class="fas fa-users"></i> <span>Customers</span></a>
+        <a class="nav-link active" onclick="showSection('customers')"><i class="fas fa-users"></i> <span>Customers</span></a>
+        <a class="nav-link" onclick="showSection('loan-applications')"><i class="fas fa-file-alt"></i> <span>Loan Applications</span></a>
         <a class="nav-link" onclick="showSection('loans')"><i class="fas fa-hand-holding-usd"></i> <span>Loans</span></a>
         <a class="nav-link" onclick="showSection('apply')"><i class="fas fa-file-alt"></i> <span>Apply Loan</span></a>
         <a class="nav-link" onclick="showSection('emi')"><i class="fas fa-calculator"></i> <span>EMI Calculator</span></a>
         <a class="nav-link" onclick="showSection('repayments')"><i class="fas fa-money-bill-wave"></i> <span>Repayments</span></a>
-        <a class="nav-link" onclick="window.location.href='/analytics.html'"><i class="fas fa-chart-line"></i> <span>Analytics</span></a>
-        <a class="nav-link" onclick="window.location.href='/eligibility.html'"><i class="fas fa-calculator"></i> <span>Eligibility</span></a>
+        <a class="nav-link" href="/analytics.html"><i class="fas fa-chart-line"></i> <span>Analytics</span></a>
+        <a class="nav-link" href="/performance.html"><i class="fas fa-chart-pie"></i> <span>Performance</span></a>
     </nav>
+    <div class="logout-btn">
+        <a class="nav-link" href="/login.html"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </div>
 </div>
 
 <div class="main-content">
     <div class="header">
-        <h1><i class="fas fa-chart-line"></i> Loan Management System Dashboard</h1>
+        <h1><i class="fas fa-chart-line"></i> Admin Dashboard</h1>
+        <p class="mb-0 text-muted">Manage customers, loans, and payments</p>
     </div>
     
     <div class="row">
         <div class="col-md-3"><div class="stat-card"><i class="fas fa-users icon"></i><div class="number" id="totalCustomers">0</div><div class="label">Total Customers</div></div></div>
         <div class="col-md-3"><div class="stat-card"><i class="fas fa-hand-holding-usd icon"></i><div class="number" id="totalLoans">0</div><div class="label">Total Loans</div></div></div>
         <div class="col-md-3"><div class="stat-card"><i class="fas fa-clock icon"></i><div class="number" id="pendingLoans">0</div><div class="label">Pending Approval</div></div></div>
-        <div class="col-md-3"><div class="stat-card"><i class="fas fa-check-circle icon"></i><div class="number" id="approvedLoans">0</div><div class="label">Approved Loans</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><i class="fas fa-check-circle icon"></i><div class="number" id="approvedLoans">0</div><div class="label">Active/Approved Loans</div></div></div>
     </div>
     
     <!-- Customers Section -->
     <div id="customersSection" class="section">
         <div class="card-custom">
-            <div class="card-header-custom"><i class="fas fa-user-plus"></i> Add New Customer</div>
+            <div class="card-header-custom"><i class="fas fa-user-plus"></i> Create Customer Account (with Login)</div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6 mb-3"><label class="form-label">Full Name *</label><input type="text" id="cName" class="form-control" placeholder="Enter full name"></div>
-                    <div class="col-md-6 mb-3"><label class="form-label">Email *</label><input type="email" id="cEmail" class="form-control" placeholder="Enter email"></div>
-                    <div class="col-md-4 mb-3"><label class="form-label">Phone *</label><input type="text" id="cPhone" class="form-control" placeholder="Enter phone"></div>
-                    <div class="col-md-4 mb-3"><label class="form-label">PAN Number</label><input type="text" id="cPan" class="form-control" placeholder="Enter PAN"></div>
-                    <div class="col-md-4 mb-3"><label class="form-label">Credit Score</label><input type="number" id="cCreditScore" class="form-control" placeholder="Credit score"></div>
-                    <div class="col-md-12 mb-3"><label class="form-label">Address</label><textarea id="cAddress" class="form-control" rows="2" placeholder="Enter address"></textarea></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Full Name *</label><input type="text" id="acFullName" class="form-control" placeholder="Enter full name"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Email *</label><input type="email" id="acEmail" class="form-control" placeholder="Enter email"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Phone *</label><input type="text" id="acPhone" class="form-control" placeholder="Enter phone"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">National ID</label><input type="text" id="acNationalId" class="form-control" placeholder="Enter National ID"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Address</label><input type="text" id="acAddress" class="form-control" placeholder="Enter address"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Username *</label><input type="text" id="acUsername" class="form-control" placeholder="Choose username"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Password *</label><input type="text" id="acPassword" class="form-control" placeholder="Set password"></div>
+                    <div class="col-md-4 mb-3"><label class="form-label">Credit Score</label><input type="number" id="acCreditScore" class="form-control" placeholder="Credit score (optional)"></div>
                 </div>
-                <button class="btn btn-primary" onclick="createCustomer()"><i class="fas fa-save"></i> Add Customer</button>
-                <div id="customerMsg"></div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-12"><h6><i class="fas fa-university"></i> Bank Account Details</h6><hr></div>
+                    <div class="col-md-3 mb-3"><label class="form-label">Bank Name</label><input type="text" id="acBankName" class="form-control" placeholder="e.g., NBM, FDH"></div>
+                    <div class="col-md-3 mb-3"><label class="form-label">Account Number</label><input type="text" id="acAccountNumber" class="form-control" placeholder="Enter account number"></div>
+                    <div class="col-md-3 mb-3"><label class="form-label">Account Name</label><input type="text" id="acAccountName" class="form-control" placeholder="Account holder name"></div>
+                    <div class="col-md-3 mb-3"><label class="form-label">Mobile Money Number</label><input type="text" id="acMobileMoney" class="form-control" placeholder="For Airtel/TNM transfers"></div>
+                </div>
+                
+                <button class="btn btn-primary mt-3" onclick="createCustomerWithAccount()">
+                    <i class="fas fa-save"></i> Create Customer with Account
+                </button>
+                <div id="acMsg" class="mt-3"></div>
             </div>
         </div>
-        <div class="card-custom">
+        
+        <div class="card-custom mt-3">
             <div class="card-header-custom"><i class="fas fa-list"></i> Customer List</div>
             <div class="card-body">
-                <div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Credit Score</th><th>KYC</th><th>Action</th></tr></thead><tbody id="customersTbody"><tr><td colspan="7" class="text-center">Loading...</td></tr></tbody></table></div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Credit Score</th><th>KYC</th><th>Action</th></tr></thead>
+                        <tbody id="customersTbody"><tr><td colspan="7" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loan Applications Section -->
+    <div id="loan-applicationsSection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-file-alt"></i> Loan Applications</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>ID</th><th>Customer</th><th>Amount</th><th>Tenure</th><th>Type</th><th>Income</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="applicationsTbody"><tr><td colspan="8" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -103,9 +168,14 @@
     <!-- Loans Section -->
     <div id="loansSection" class="section" style="display:none;">
         <div class="card-custom">
-            <div class="card-header-custom"><i class="fas fa-list"></i> All Loan Applications</div>
+            <div class="card-header-custom"><i class="fas fa-list"></i> All Loans</div>
             <div class="card-body">
-                <div class="table-responsive"><table class="table table-hover"><thead><tr><th>ID</th><th>Customer</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Status</th><th>Action</th></tr></thead><tbody id="loansTbody"><tr><td colspan="7" class="text-center">Loading...</td></tr></tbody></table></div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>ID</th><th>Customer</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Disbursed (MWK)</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="loansTbody"><tr><td colspan="8" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -125,50 +195,6 @@
                 </div>
                 <button class="btn btn-primary" onclick="applyLoan()"><i class="fas fa-paper-plane"></i> Submit Application</button>
                 <div id="loanMsg"></div>
-            </div>
-        </div>
-        
-        <!-- Document Upload Section -->
-        <div class="card-custom mt-4">
-            <div class="card-header-custom"><i class="fas fa-file-upload"></i> Upload Documents (After Loan Approval)</div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Select Loan</label>
-                        <select id="docLoanId" class="form-select">
-                            <option value="">-- Select approved loan --</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Document Type</label>
-                        <select id="docType" class="form-select">
-                            <option value="ID_PROOF">ID/Passport</option>
-                            <option value="INCOME_PROOF">Income/Salary Slip</option>
-                            <option value="BANK_STATEMENT">Bank Statement</option>
-                            <option value="ADDRESS_PROOF">Address Proof</option>
-                            <option value="AGREEMENT">Loan Agreement</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="uploadDocument()"><i class="fas fa-cloud-upload-alt"></i> Add Document Record</button>
-                <div id="docUploadMsg"></div>
-            </div>
-        </div>
-        
-        <!-- Document List Section -->
-        <div class="card-custom mt-3">
-            <div class="card-header-custom"><i class="fas fa-folder-open"></i> Uploaded Documents</div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label class="form-label">Select Loan to View Documents</label>
-                        <select id="viewDocLoanId" class="form-select" onchange="loadDocuments()">
-                            <option value="">-- Select a loan --</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="documentList" class="mt-3"><div class="text-muted text-center">Select a loan to view documents</div></div>
-                <div id="docSummary" class="mt-3"></div>
             </div>
         </div>
     </div>
@@ -217,32 +243,15 @@
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-history"></i> Payment History</div>
             <div class="card-body">
-                <div class="table-responsive"><table class="table table-hover"><thead><tr><th>Installment #</th><th>Due Date</th><th>Amount Due</th><th>Paid Date</th><th>Amount Paid</th><th>Status</th></tr></thead><tbody id="paymentHistoryTbody"><tr><td colspan="6" class="text-center">Select a loan to view payment history</td></tr></tbody></table></div>
-            </div>
-        </div>
-        
-        <!-- Payment Reminders Widget -->
-        <div class="card-custom">
-            <div class="card-header-custom"><i class="fas fa-bell"></i> Payment Reminders</div>
-            <div class="card-body">
-                <div class="row" id="reminderSummary">
-                    <div class="col-md-3"><div class="alert alert-info text-center"><h4 id="upcomingCount">0</h4><p>Upcoming Payments</p></div></div>
-                    <div class="col-md-3"><div class="alert alert-warning text-center"><h4 id="urgentCount">0</h4><p>Urgent (&le;3 days)</p></div></div>
-                    <div class="col-md-3"><div class="alert alert-danger text-center"><h4 id="overdueCount">0</h4><p>Overdue Payments</p></div></div>
-                    <div class="col-md-3"><div class="alert alert-success text-center"><h4 id="upcomingAmount">MWK 0</h4><p>Total Due</p></div></div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Installment #</th><th>Due Date</th><th>Amount Due</th><th>Paid Date</th><th>Amount Paid</th><th>Status</th></tr></thead>
+                        <tbody id="paymentHistoryTbody"><tr><td colspan="6" class="text-center">Select a loan to view payment history</td></tr></tbody>
+                    </table>
                 </div>
-                
-                <ul class="nav nav-tabs mt-3" id="reminderTabs">
-                    <li class="nav-item"><a class="nav-link active" onclick="showReminderTab('upcoming')">Upcoming</a></li>
-                    <li class="nav-item"><a class="nav-link" onclick="showReminderTab('overdue')">Overdue</a></li>
-                </ul>
-                
-                <div id="upcomingReminders" class="mt-3"><div class="text-center">Loading reminders...</div></div>
-                <div id="overdueReminders" class="mt-3" style="display:none;"><div class="text-center">Loading reminders...</div></div>
             </div>
         </div>
         
-        <!-- Export Reports & Statements Section -->
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-download"></i> Export Reports & Statements</div>
             <div class="card-body">
@@ -260,277 +269,486 @@
 </div>
 
 <script>
-    function showSection(section) {
-        document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
-        document.getElementById(section + 'Section').style.display = 'block';
-        if(section === 'customers') loadCustomers();
-        if(section === 'loans') loadLoans();
-        if(section === 'apply') { loadApprovedLoansForDocs(); }
-        if(section === 'repayments') { loadLoansDropdown(); loadReminderSummary(); loadUpcomingReminders(); loadOverdueReminders(); }
+    function showSection(sectionName) {
+        var sections = document.querySelectorAll('.section');
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].style.display = 'none';
+        }
+        var target = document.getElementById(sectionName + 'Section');
+        if (target) {
+            target.style.display = 'block';
+        }
+        
+        var navLinks = document.querySelectorAll('.sidebar .nav-link');
+        for (var i = 0; i < navLinks.length; i++) {
+            navLinks[i].classList.remove('active');
+        }
+        var clickedLink = event && event.target ? event.target.closest('.nav-link') : null;
+        if (clickedLink) {
+            clickedLink.classList.add('active');
+        }
+        
+        if (sectionName === 'customers') loadCustomers();
+        if (sectionName === 'loan-applications') loadApplications();
+        if (sectionName === 'loans') loadLoans();
+        if (sectionName === 'repayments') loadLoansDropdown();
+    }
+    
+    function formatMoney(amount) {
+        if (!amount || amount === 0) return '0';
+        return Number(amount).toLocaleString();
     }
     
     async function loadStats() {
         try {
-            const customers = await fetch('/api/customers').then(r => r.json());
-            const loans = await fetch('/api/loans').then(r => r.json());
+            var customers = await fetch('/api/customers').then(function(r) { return r.json(); });
+            var loans = await fetch('/api/loans').then(function(r) { return r.json(); });
             document.getElementById('totalCustomers').innerText = customers.length;
             document.getElementById('totalLoans').innerText = loans.length;
-            document.getElementById('pendingLoans').innerText = loans.filter(l => l.status === 'PENDING').length;
-            document.getElementById('approvedLoans').innerText = loans.filter(l => l.status === 'APPROVED').length;
+            document.getElementById('pendingLoans').innerText = loans.filter(function(l) { return l.status === 'PENDING'; }).length;
+            document.getElementById('approvedLoans').innerText = loans.filter(function(l) { return l.status === 'APPROVED' || l.status === 'ACTIVE'; }).length;
         } catch(e) { console.error(e); }
     }
     
     async function loadCustomers() {
         try {
-            const customers = await fetch('/api/customers').then(r => r.json());
-            let html = '';
-            if(customers.length === 0) html = '<tr><td colspan="7" class="text-center">No customers found</td></tr>';
-            else customers.forEach(c => { html += '<tr><td>' + c.id + '</td><td><i class="fas fa-user-circle"></i> ' + c.fullName + '</td><td>' + c.email + '</td><td>' + c.phone + '</td><td>' + (c.creditScore || '-') + '</td><td><span class="badge bg-info">' + c.kycStatus + '</span></td><td><button class="btn btn-danger btn-sm" onclick="deleteCustomer(' + c.id + ')"><i class="fas fa-trash"></i> Delete</button></td></tr>'; });
+            var customers = await fetch('/api/customers').then(function(r) { return r.json(); });
+            var html = '';
+            if (customers.length === 0) {
+                html = '<tr><td colspan="7" class="text-center">No customers found</td></tr>';
+            } else {
+                for (var i = 0; i < customers.length; i++) {
+                    var c = customers[i];
+                    html += '<tr>' +
+                        '<td>' + c.id + '</td>' +
+                        '<td><i class="fas fa-user-circle"></i> ' + c.fullName + '</td>' +
+                        '<td>' + c.email + '</td>' +
+                        '<td>' + c.phone + '</td>' +
+                        '<td>' + (c.creditScore || '-') + '</td>' +
+                        '<td><span class="badge bg-info">' + c.kycStatus + '</span></td>' +
+                        '<td><button class="btn btn-danger btn-sm" onclick="deleteCustomer(' + c.id + ')"><i class="fas fa-trash"></i> Delete</button></td>' +
+                    '</tr>';
+                }
+            }
             document.getElementById('customersTbody').innerHTML = html;
             loadStats();
         } catch(e) { console.error(e); }
     }
     
+    async function createCustomerWithAccount() {
+        console.log('Create Customer button clicked');
+        
+        var customer = {
+            fullName: document.getElementById('acFullName').value,
+            email: document.getElementById('acEmail').value,
+            phone: document.getElementById('acPhone').value,
+            address: document.getElementById('acAddress').value,
+            username: document.getElementById('acUsername').value,
+            password: document.getElementById('acPassword').value,
+            creditScore: document.getElementById('acCreditScore').value || '0',
+            nationalId: document.getElementById('acNationalId').value,
+            bankName: document.getElementById('acBankName').value,
+            bankAccountNumber: document.getElementById('acAccountNumber').value,
+            bankAccountName: document.getElementById('acAccountName').value,
+            mobileMoneyNumber: document.getElementById('acMobileMoney').value
+        };
+        
+        console.log('Customer data:', customer);
+        
+        if (!customer.fullName || !customer.email || !customer.phone || !customer.username || !customer.password) {
+            document.getElementById('acMsg').innerHTML = '<div class="alert alert-danger mt-3">Please fill all required fields!</div>';
+            return;
+        }
+        
+        document.getElementById('acMsg').innerHTML = '<div class="alert alert-info mt-3">Creating customer...</div>';
+        
+        try {
+            var response = await fetch('/api/customers/create-with-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(customer)
+            });
+            var data = await response.json();
+            console.log('Response:', data);
+            
+            if (response.ok) {
+                document.getElementById('acMsg').innerHTML = '<div class="alert alert-success mt-3">' + data.message + '<br>Username: ' + data.username + '<br>Welcome email sent!</div>';
+                document.getElementById('acFullName').value = '';
+                document.getElementById('acEmail').value = '';
+                document.getElementById('acPhone').value = '';
+                document.getElementById('acAddress').value = '';
+                document.getElementById('acUsername').value = '';
+                document.getElementById('acPassword').value = '';
+                document.getElementById('acCreditScore').value = '';
+                document.getElementById('acNationalId').value = '';
+                document.getElementById('acBankName').value = '';
+                document.getElementById('acAccountNumber').value = '';
+                document.getElementById('acAccountName').value = '';
+                document.getElementById('acMobileMoney').value = '';
+                loadCustomers();
+                setTimeout(function() { document.getElementById('acMsg').innerHTML = ''; }, 5000);
+            } else {
+                document.getElementById('acMsg').innerHTML = '<div class="alert alert-danger mt-3">' + data + '</div>';
+            }
+        } catch(e) {
+            console.error('Error:', e);
+            document.getElementById('acMsg').innerHTML = '<div class="alert alert-danger mt-3">Error creating customer: ' + e.message + '</div>';
+        }
+    }
+    
+    async function deleteCustomer(id) {
+        if (confirm('Delete this customer?')) {
+            await fetch('/api/customers/' + id, { method: 'DELETE' });
+            loadCustomers();
+            loadLoans();
+        }
+    }
+    
+    async function loadApplications() {
+        try {
+            var response = await fetch('/api/loan-applications/all');
+            var applications = await response.json();
+            var tbody = document.getElementById('applicationsTbody');
+            tbody.innerHTML = '';
+            
+            if (applications.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No applications found</td></tr>';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < applications.length; i++) {
+                var app = applications[i];
+                var statusClass = app.status === 'APPROVED' ? 'badge-approved' : (app.status === 'REJECTED' ? 'badge-rejected' : 'badge-pending');
+                html += '<tr>' +
+                    '<td>' + app.id + '</td>' +
+                    '<td>' + (app.customer?.fullName || 'N/A') + '</td>' +
+                    '<td>MWK ' + formatMoney(app.requestedAmount) + '</td>' +
+                    '<td>' + app.tenureMonths + ' months</td>' +
+                    '<td>' + app.loanType + '</td>' +
+                    '<td>MWK ' + formatMoney(app.monthlyIncome) + '</td>' +
+                    '<td><span class="' + statusClass + '">' + app.status + '</span></td>' +
+                    '<td>' + getActionButtons(app) + '</td>' +
+                '</tr>';
+            }
+            tbody.innerHTML = html;
+        } catch(e) { console.error(e); }
+    }
+
+    function getActionButtons(app) {
+        if (app.status === 'PENDING') {
+            return '<button class="btn btn-success btn-sm me-1" onclick="reviewApplication(' + app.id + ', \'APPROVED\')"><i class="fas fa-check"></i> Approve</button>' +
+                   '<button class="btn btn-danger btn-sm" onclick="rejectApplication(' + app.id + ')"><i class="fas fa-times"></i> Reject</button>';
+        }
+        return '<span class="text-muted">Reviewed</span>';
+    }
+
+    async function reviewApplication(id, status) {
+        if (confirm('Approve this application?')) {
+            try {
+                var response = await fetch('/api/loan-applications/review/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status, reviewedBy: 'Admin' })
+                });
+                if (response.ok) {
+                    alert('✅ Application approved successfully!');
+                    loadApplications();
+                    loadLoans();
+                } else {
+                    alert('❌ Error approving application');
+                }
+            } catch(e) {
+                alert('❌ Error approving application');
+            }
+        }
+    }
+
+    async function rejectApplication(id) {
+        var reason = prompt('Enter rejection reason:');
+        if (reason !== null && reason !== '') {
+            try {
+                var response = await fetch('/api/loan-applications/review/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        status: 'REJECTED', 
+                        rejectionReason: reason,
+                        reviewedBy: 'Admin' 
+                    })
+                });
+                if (response.ok) {
+                    alert('❌ Application rejected');
+                    loadApplications();
+                }
+            } catch(e) {
+                alert('Error rejecting application');
+            }
+        }
+    }
+    
     async function loadLoans() {
         try {
-            const loans = await fetch('/api/loans').then(r => r.json());
-            let html = '';
-            if(loans.length === 0) html = '<tr><td colspan="7" class="text-center">No loans found</td></tr>';
-            else loans.forEach(l => { html += '<tr><td>' + l.id + '</td><td>' + (l.customer?.fullName) + '</td><td>MWK ' + (l.loanAmount?.toLocaleString()) + '</td><td>' + l.tenureMonths + ' months</td><td>MWK ' + (l.emiAmount?.toLocaleString()) + '</td><td><span class="badge-approved">' + l.status + '</span></td><td>' + (l.status === 'PENDING' ? '<button class="btn btn-success btn-sm" onclick="approveLoan(' + l.id + ')"><i class="fas fa-check"></i> Approve</button>' : 'Approved') + '</td></tr>'; });
+            var loans = await fetch('/api/loans').then(function(r) { return r.json(); });
+            var html = '';
+            if (loans.length === 0) {
+                html = '<tr><td colspan="8" class="text-center">No loans found</td></tr>';
+            } else {
+                for (var i = 0; i < loans.length; i++) {
+                    var l = loans[i];
+                    var actionHtml = '';
+                    if (l.status === 'PENDING') {
+                        actionHtml = '<button class="btn btn-success btn-sm" onclick="approveLoan(' + l.id + ')"><i class="fas fa-check"></i> Approve</button>';
+                    } else if (l.status === 'APPROVED') {
+                        actionHtml = '<button class="btn btn-warning btn-sm" onclick="disburseLoan(' + l.id + ')"><i class="fas fa-money-bill-wave"></i> Disburse</button>';
+                    } else if (l.status === 'ACTIVE') {
+                        actionHtml = '<span class="badge bg-info">Disbursed</span>';
+                    } else if (l.status === 'CLOSED') {
+                        actionHtml = '<span class="badge bg-secondary">Closed</span>';
+                    } else {
+                        actionHtml = '<span class="badge bg-secondary">' + l.status + '</span>';
+                    }
+                    
+                    var statusClass = l.status === 'APPROVED' ? 'badge-approved' : (l.status === 'ACTIVE' ? 'badge-active' : 'badge-pending');
+                    if (l.status === 'CLOSED') statusClass = 'badge-closed';
+                    
+                    html += '<tr>' +
+                        '<td>' + l.id + '</td>' +
+                        '<td>' + (l.customer?.fullName || 'N/A') + '</td>' +
+                        '<td>MWK ' + formatMoney(l.loanAmount) + '</td>' +
+                        '<td>' + l.tenureMonths + ' months</td>' +
+                        '<td>MWK ' + formatMoney(l.emiAmount) + '</td>' +
+                        '<td>MWK ' + formatMoney(l.amountDisbursed) + '</td>' +
+                        '<td><span class="' + statusClass + '">' + l.status + '</span></td>' +
+                        '<td>' + actionHtml + '</td>' +
+                    '</tr>';
+                }
+            }
             document.getElementById('loansTbody').innerHTML = html;
             loadStats();
         } catch(e) { console.error(e); }
     }
     
-    async function createCustomer() {
-        const customer = { fullName: document.getElementById('cName').value, email: document.getElementById('cEmail').value, phone: document.getElementById('cPhone').value, address: document.getElementById('cAddress').value, panNumber: document.getElementById('cPan').value, creditScore: parseInt(document.getElementById('cCreditScore').value) || 0 };
-        if(!customer.fullName || !customer.email || !customer.phone) { document.getElementById('customerMsg').innerHTML = '<div class="alert alert-danger mt-3">Please fill all required fields!</div>'; return; }
-        try {
-            const response = await fetch('/api/customers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(customer) });
-            const data = await response.json();
-            document.getElementById('customerMsg').innerHTML = '<div class="alert alert-success mt-3">Customer added successfully! ID: ' + data.id + '</div>';
-            document.getElementById('cName').value = ''; document.getElementById('cEmail').value = ''; document.getElementById('cPhone').value = ''; document.getElementById('cAddress').value = ''; document.getElementById('cPan').value = ''; document.getElementById('cCreditScore').value = '';
-            loadCustomers();
-            setTimeout(() => document.getElementById('customerMsg').innerHTML = '', 3000);
-        } catch(e) { document.getElementById('customerMsg').innerHTML = '<div class="alert alert-danger mt-3">Error adding customer</div>'; }
-    }
-    
-    async function applyLoan() {
-        const customerId = document.getElementById('loanCustomerId').value;
-        const application = { loanAmount: parseFloat(document.getElementById('loanAmount').value), tenureMonths: parseInt(document.getElementById('tenure').value), interestRate: parseFloat(document.getElementById('interestRate').value), loanType: document.getElementById('loanType').value, purpose: document.getElementById('purpose').value };
-        if(!customerId || !application.loanAmount || !application.tenureMonths || !application.interestRate) { document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">Please fill all required fields!</div>'; return; }
-        try {
-            const response = await fetch('/api/loans/apply/' + customerId, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(application) });
-            const data = await response.json();
-            if(response.ok) { document.getElementById('loanMsg').innerHTML = '<div class="alert alert-success mt-3">Loan application submitted! Monthly EMI: MWK ' + (data.emiAmount?.toLocaleString()) + '</div>'; document.getElementById('loanCustomerId').value = ''; document.getElementById('loanAmount').value = ''; document.getElementById('tenure').value = ''; document.getElementById('interestRate').value = ''; document.getElementById('purpose').value = ''; loadLoans(); setTimeout(() => document.getElementById('loanMsg').innerHTML = '', 3000); }
-            else { document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">' + data + '</div>'; }
-        } catch(e) { document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">Error applying for loan</div>'; }
-    }
-    
     async function approveLoan(loanId) {
         try {
-            const response = await fetch('/api/loans/' + loanId + '/approve', { method: 'PUT' });
-            if(response.ok) { alert('Loan #' + loanId + ' has been approved successfully!'); loadLoans(); await fetch('/api/repayments/generate/' + loanId, { method: 'POST' }); }
-            else { alert('Failed to approve loan'); }
+            var response = await fetch('/api/loans/' + loanId + '/approve', { method: 'PUT' });
+            if (response.ok) {
+                alert('Loan #' + loanId + ' has been approved successfully!');
+                loadLoans();
+                await fetch('/api/repayments/generate/' + loanId, { method: 'POST' });
+            } else {
+                alert('Failed to approve loan');
+            }
         } catch(e) { alert('Error approving loan'); }
     }
     
-    async function deleteCustomer(id) { if(confirm('Delete this customer?')) { await fetch('/api/customers/' + id, { method: 'DELETE' }); loadCustomers(); loadLoans(); } }
+    async function disburseLoan(loanId) {
+        var method = prompt('Enter disbursement method (BANK_TRANSFER, MOBILE_MONEY, CASH, CHEQUE):', 'BANK_TRANSFER');
+        if (!method) return;
+        
+        var reference = prompt('Enter reference number:', 'DISP-' + Date.now());
+        if (!reference) return;
+        
+        var disbursedBy = prompt('Disbursed by (your name):', 'Admin');
+        if (!disbursedBy) return;
+        
+        if (confirm('Confirm disbursement of this loan?')) {
+            try {
+                var response = await fetch('/api/loans/' + loanId + '/disburse', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        method: method,
+                        reference: reference,
+                        disbursedBy: disbursedBy
+                    })
+                });
+                var data = await response.json();
+                if (response.ok) {
+                    alert('✅ Loan disbursed successfully!\nAmount: MWK ' + formatMoney(data.loanAmount) + '\nReference: ' + reference);
+                    loadLoans();
+                } else {
+                    alert('❌ Failed to disburse loan: ' + data);
+                }
+            } catch(e) {
+                alert('❌ Error disbursing loan');
+            }
+        }
+    }
+    
+    async function applyLoan() {
+        var customerId = document.getElementById('loanCustomerId').value;
+        var application = {
+            loanAmount: parseFloat(document.getElementById('loanAmount').value),
+            tenureMonths: parseInt(document.getElementById('tenure').value),
+            interestRate: parseFloat(document.getElementById('interestRate').value),
+            loanType: document.getElementById('loanType').value,
+            purpose: document.getElementById('purpose').value
+        };
+        
+        if (!customerId || !application.loanAmount || !application.tenureMonths || !application.interestRate) {
+            document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">Please fill all required fields!</div>';
+            return;
+        }
+        
+        try {
+            var response = await fetch('/api/loans/apply/' + customerId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(application)
+            });
+            var data = await response.json();
+            if (response.ok) {
+                document.getElementById('loanMsg').innerHTML = '<div class="alert alert-success mt-3">Loan application submitted! Monthly EMI: MWK ' + formatMoney(data.emiAmount) + '</div>';
+                document.getElementById('loanCustomerId').value = '';
+                document.getElementById('loanAmount').value = '';
+                document.getElementById('tenure').value = '';
+                document.getElementById('interestRate').value = '';
+                document.getElementById('purpose').value = '';
+                loadLoans();
+                setTimeout(function() { document.getElementById('loanMsg').innerHTML = ''; }, 3000);
+            } else {
+                document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">' + data + '</div>';
+            }
+        } catch(e) {
+            document.getElementById('loanMsg').innerHTML = '<div class="alert alert-danger mt-3">Error applying for loan</div>';
+        }
+    }
     
     async function calculateEMI() {
-        const amount = document.getElementById('emiAmount').value, tenure = document.getElementById('emiTenure').value, rate = document.getElementById('emiRate').value;
-        if(!amount || !tenure || !rate) { alert('Please enter all values'); return; }
+        var amount = document.getElementById('emiAmount').value;
+        var tenure = document.getElementById('emiTenure').value;
+        var rate = document.getElementById('emiRate').value;
+        
+        if (!amount || !tenure || !rate) {
+            alert('Please enter all values');
+            return;
+        }
+        
         try {
-            const response = await fetch('/api/loans/calculate-emi?amount=' + amount + '&tenure=' + tenure + '&rate=' + rate);
-            const result = await response.json();
-            document.getElementById('emiResult').innerHTML = '<div class="emi-result" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:10px;margin-top:20px;"><h5><i class="fas fa-chart-line"></i> EMI Details (MWK)</h5><hr><p><strong>Monthly EMI:</strong> MWK ' + (result.monthlyEMI?.toLocaleString()) + '</p><p><strong>Total Payable:</strong> MWK ' + (result.totalPayable?.toLocaleString()) + '</p><p><strong>Total Interest:</strong> MWK ' + (result.totalInterest?.toLocaleString()) + '</p><p><strong>Principal Amount:</strong> MWK ' + (result.principalAmount?.toLocaleString()) + '</p><p><strong>Tenure:</strong> ' + result.tenureMonths + ' months</p></div>';
+            var response = await fetch('/api/loans/calculate-emi?amount=' + amount + '&tenure=' + tenure + '&rate=' + rate);
+            var result = await response.json();
+            document.getElementById('emiResult').innerHTML = 
+                '<div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;border-radius:10px;margin-top:20px;">' +
+                    '<h5><i class="fas fa-chart-line"></i> EMI Details (MWK)</h5>' +
+                    '<hr>' +
+                    '<p><strong>Monthly EMI:</strong> MWK ' + formatMoney(result.monthlyEMI) + '</p>' +
+                    '<p><strong>Total Payable:</strong> MWK ' + formatMoney(result.totalPayable) + '</p>' +
+                    '<p><strong>Total Interest:</strong> MWK ' + formatMoney(result.totalInterest) + '</p>' +
+                    '<p><strong>Principal Amount:</strong> MWK ' + formatMoney(result.principalAmount) + '</p>' +
+                    '<p><strong>Tenure:</strong> ' + result.tenureMonths + ' months</p>' +
+                '</div>';
         } catch(e) { alert('Error calculating EMI'); }
     }
     
     async function loadLoansDropdown() {
         try {
-            const loans = await fetch('/api/loans').then(r => r.json());
-            const select = document.getElementById('selectLoan');
+            var loans = await fetch('/api/loans').then(function(r) { return r.json(); });
+            var select = document.getElementById('selectLoan');
             select.innerHTML = '<option value="">-- Select a loan --</option>';
-            loans.forEach(loan => { if(loan.status === 'APPROVED' || loan.status === 'ACTIVE') { select.innerHTML += '<option value="' + loan.id + '">Loan #' + loan.id + ' - ' + (loan.customer?.fullName) + ' - MWK ' + (loan.loanAmount?.toLocaleString()) + '</option>'; } });
+            for (var i = 0; i < loans.length; i++) {
+                var loan = loans[i];
+                if (loan.status === 'APPROVED' || loan.status === 'ACTIVE') {
+                    select.innerHTML += '<option value="' + loan.id + '">Loan #' + loan.id + ' - ' + loan.customer?.fullName + ' - MWK ' + formatMoney(loan.loanAmount) + '</option>';
+                }
+            }
         } catch(e) { console.error(e); }
     }
     
     async function loadLoanSummary() {
-        const loanId = document.getElementById('selectLoan').value;
-        if(!loanId) { document.getElementById('loanSummary').innerHTML = ''; document.getElementById('paymentHistoryTbody').innerHTML = '<tr><td colspan="6" class="text-center">Select a loan to view payment history</td></tr>'; return; }
+        var loanId = document.getElementById('selectLoan').value;
+        if (!loanId) {
+            document.getElementById('loanSummary').innerHTML = '';
+            document.getElementById('paymentHistoryTbody').innerHTML = '<tr><td colspan="6" class="text-center">Select a loan to view payment history</td></tr>';
+            return;
+        }
+        
         try {
-            const summary = await fetch('/api/repayments/summary/' + loanId).then(r => r.json());
-            document.getElementById('loanSummary').innerHTML = '<div class="row mt-3"><div class="col-md-3"><div class="stat-card" style="background:#667eea;color:white;padding:15px;"><div class="number" style="color:white">MWK ' + (summary.totalLoan?.toLocaleString()) + '</div><div class="label">Total Loan</div></div></div><div class="col-md-3"><div class="stat-card" style="background:#27ae60;color:white;padding:15px;"><div class="number" style="color:white">MWK ' + (summary.amountPaid?.toLocaleString()) + '</div><div class="label">Amount Paid</div></div></div><div class="col-md-3"><div class="stat-card" style="background:#e74c3c;color:white;padding:15px;"><div class="number" style="color:white">MWK ' + (summary.remainingBalance?.toLocaleString()) + '</div><div class="label">Remaining Balance</div></div></div><div class="col-md-3"><div class="stat-card" style="background:#f39c12;color:white;padding:15px;"><div class="number" style="color:white">' + (summary.progressPercent?.toFixed(1)) + '%</div><div class="label">Progress</div></div></div></div><div class="progress mt-3"><div class="progress-bar" style="width: ' + summary.progressPercent + '%">' + (summary.progressPercent?.toFixed(1)) + '%</div></div><div class="row mt-3"><div class="col-md-6"><p><strong>Customer:</strong> ' + summary.customerName + '</p><p><strong>EMI Amount:</strong> MWK ' + (summary.emiAmount?.toLocaleString()) + '</p></div><div class="col-md-6"><p><strong>Paid Installments:</strong> ' + summary.paidInstallments + ' / ' + summary.totalInstallments + '</p><p><strong>Status:</strong> <span class="badge-approved">' + summary.status + '</span></p></div></div>';
-            const history = await fetch('/api/repayments/history/' + loanId).then(r => r.json());
-            let historyHtml = '';
-            if(history.length === 0) historyHtml = '<tr><td colspan="6" class="text-center">No payment schedule generated yet</td></tr>';
-            else history.forEach(p => { historyHtml += '<tr><td>' + p.installmentNumber + '</td><td>' + new Date(p.dueDate).toLocaleDateString() + '</td><td>MWK ' + (p.amountDue?.toLocaleString()) + '</td><td>' + (p.paidDate ? new Date(p.paidDate).toLocaleDateString() : '-') + '</td><td>MWK ' + (p.amountPaid?.toLocaleString() || '-') + '</td><td><span class="' + (p.status === 'PAID' ? 'badge-approved' : 'badge-pending') + '">' + p.status + '</span></td></tr>'; });
+            var summary = await fetch('/api/repayments/summary/' + loanId).then(function(r) { return r.json(); });
+            document.getElementById('loanSummary').innerHTML = 
+                '<div class="row mt-3">' +
+                    '<div class="col-md-3"><div style="background:#667eea;color:white;border-radius:10px;padding:15px;"><div style="font-size:28px;font-weight:bold;">MWK ' + formatMoney(summary.totalLoan) + '</div><div>Total Loan</div></div></div>' +
+                    '<div class="col-md-3"><div style="background:#27ae60;color:white;border-radius:10px;padding:15px;"><div style="font-size:28px;font-weight:bold;">MWK ' + formatMoney(summary.amountPaid) + '</div><div>Amount Paid</div></div></div>' +
+                    '<div class="col-md-3"><div style="background:#e74c3c;color:white;border-radius:10px;padding:15px;"><div style="font-size:28px;font-weight:bold;">MWK ' + formatMoney(summary.remainingBalance) + '</div><div>Remaining Balance</div></div></div>' +
+                    '<div class="col-md-3"><div style="background:#f39c12;color:white;border-radius:10px;padding:15px;"><div style="font-size:28px;font-weight:bold;">' + (summary.progressPercent?.toFixed(1)) + '%</div><div>Progress</div></div></div>' +
+                '</div>' +
+                '<div class="progress mt-3"><div class="progress-bar" style="width: ' + summary.progressPercent + '%">' + (summary.progressPercent?.toFixed(1)) + '%</div></div>' +
+                '<div class="row mt-3">' +
+                    '<div class="col-md-6"><p><strong>Customer:</strong> ' + summary.customerName + '</p><p><strong>EMI Amount:</strong> MWK ' + formatMoney(summary.emiAmount) + '</p></div>' +
+                    '<div class="col-md-6"><p><strong>Paid Installments:</strong> ' + summary.paidInstallments + ' / ' + summary.totalInstallments + '</p><p><strong>Status:</strong> <span class="badge-approved">' + summary.status + '</span></p></div>' +
+                '</div>';
+            
+            var history = await fetch('/api/repayments/history/' + loanId).then(function(r) { return r.json(); });
+            var historyHtml = '';
+            if (history.length === 0) {
+                historyHtml = '<tr><td colspan="6" class="text-center">No payment schedule generated yet</td></tr>';
+            } else {
+                for (var i = 0; i < history.length; i++) {
+                    var p = history[i];
+                    historyHtml += '<tr>' +
+                        '<td>' + p.installmentNumber + '</td>' +
+                        '<td>' + new Date(p.dueDate).toLocaleDateString() + '</td>' +
+                        '<td>MWK ' + formatMoney(p.amountDue) + '</td>' +
+                        '<td>' + (p.paidDate ? new Date(p.paidDate).toLocaleDateString() : '-') + '</td>' +
+                        '<td>MWK ' + formatMoney(p.amountPaid) + '</td>' +
+                        '<td><span class="' + (p.status === 'PAID' ? 'badge-approved' : 'badge-pending') + '">' + p.status + '</span></td>' +
+                    '</tr>';
+                }
+            }
             document.getElementById('paymentHistoryTbody').innerHTML = historyHtml;
         } catch(e) { console.error(e); }
     }
     
     async function recordPayment() {
-        const payment = { loanId: parseInt(document.getElementById('paymentLoanId').value), installmentNumber: parseInt(document.getElementById('installmentNumber').value), amountPaid: parseFloat(document.getElementById('amountPaid').value), paymentMethod: document.getElementById('paymentMethod').value, transactionReference: document.getElementById('transactionRef').value || 'MANUAL-' + Date.now() };
-        if(!payment.loanId || !payment.installmentNumber || !payment.amountPaid) { document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">Please fill Loan ID, Installment #, and Amount</div>'; return; }
+        var payment = {
+            loanId: parseInt(document.getElementById('paymentLoanId').value),
+            installmentNumber: parseInt(document.getElementById('installmentNumber').value),
+            amountPaid: parseFloat(document.getElementById('amountPaid').value),
+            paymentMethod: document.getElementById('paymentMethod').value,
+            transactionReference: document.getElementById('transactionRef').value || 'MANUAL-' + Date.now()
+        };
+        
+        if (!payment.loanId || !payment.installmentNumber || !payment.amountPaid) {
+            document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">Please fill Loan ID, Installment #, and Amount</div>';
+            return;
+        }
+        
         try {
-            const response = await fetch('/api/repayments/pay', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payment) });
-            if(response.ok) { document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-success">Payment recorded successfully!</div>'; document.getElementById('paymentLoanId').value = ''; document.getElementById('installmentNumber').value = ''; document.getElementById('amountPaid').value = ''; document.getElementById('transactionRef').value = ''; loadLoansDropdown(); if(document.getElementById('selectLoan').value) loadLoanSummary(); loadReminderSummary(); loadUpcomingReminders(); loadOverdueReminders(); setTimeout(() => document.getElementById('paymentMsg').innerHTML = '', 3000); }
-            else { const result = await response.json(); document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">' + (result.error || 'Error recording payment') + '</div>'; }
-        } catch(e) { document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">Error recording payment</div>'; }
+            var response = await fetch('/api/repayments/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payment)
+            });
+            if (response.ok) {
+                document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-success">Payment recorded successfully!</div>';
+                document.getElementById('paymentLoanId').value = '';
+                document.getElementById('installmentNumber').value = '';
+                document.getElementById('amountPaid').value = '';
+                document.getElementById('transactionRef').value = '';
+                loadLoansDropdown();
+                if (document.getElementById('selectLoan').value) loadLoanSummary();
+                setTimeout(function() { document.getElementById('paymentMsg').innerHTML = ''; }, 3000);
+            } else {
+                var result = await response.json();
+                document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">' + (result.error || 'Error recording payment') + '</div>';
+            }
+        } catch(e) {
+            document.getElementById('paymentMsg').innerHTML = '<div class="alert alert-danger">Error recording payment</div>';
+        }
     }
     
     function exportLoans() { window.location.href = '/api/export/loans'; }
     function exportCustomers() { window.location.href = '/api/export/customers'; }
-    function exportPaymentHistory() { const loanId = document.getElementById('selectLoan').value; if(loanId) { window.location.href = '/api/export/payments/' + loanId; } else { alert('Please select a loan first'); } }
-    function viewStatement() { const loanId = document.getElementById('selectLoan').value; if(loanId) { window.open('/statement.html?loanId=' + loanId, '_blank'); } else { alert('Please select a loan first'); } }
-    
-    async function loadReminderSummary() {
-        try {
-            const response = await fetch('/api/reminders/summary');
-            const data = await response.json();
-            document.getElementById('upcomingCount').innerText = data.upcomingCount || 0;
-            document.getElementById('urgentCount').innerText = data.urgentCount || 0;
-            document.getElementById('overdueCount').innerText = data.overdueCount || 0;
-            document.getElementById('upcomingAmount').innerHTML = 'MWK ' + formatMoney(data.upcomingAmount);
-        } catch(e) { console.error(e); }
+    function exportPaymentHistory() { 
+        var loanId = document.getElementById('selectLoan').value;
+        if (loanId) { window.location.href = '/api/export/payments/' + loanId; }
+        else { alert('Please select a loan first'); }
     }
-    
-    async function loadUpcomingReminders() {
-        try {
-            const response = await fetch('/api/reminders/upcoming');
-            const reminders = await response.json();
-            let html = '';
-            if (reminders.length === 0) { html = '<div class="alert alert-success">No upcoming payments! All caught up.</div>'; }
-            else {
-                html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Customer</th><th>Installment</th><th>Due Date</th><th>Amount</th><th>Priority</th><th>Action</th></tr></thead><tbody>';
-                reminders.forEach(r => {
-                    const priorityClass = r.priority === 'URGENT' ? 'danger' : (r.priority === 'HIGH' ? 'warning' : 'info');
-                    html += '<tr><td><i class="fas fa-user-circle"></i> ' + r.customerName + '</td><td>#' + r.installmentNumber + '</td><td><i class="fas fa-calendar"></i> ' + new Date(r.dueDate).toLocaleDateString() + '</td><td>MWK ' + formatMoney(r.amountDue) + '</td><td><span class="badge bg-' + priorityClass + '">' + r.priority + '</span> (' + r.daysUntilDue + ' days)</td><td><button class="btn btn-sm btn-primary" onclick="recordPaymentNow(' + r.loanId + ', ' + r.installmentNumber + ', ' + r.amountDue + ')">Record Payment</button></td></tr>';
-                });
-                html += '</tbody></table></div>';
-            }
-            document.getElementById('upcomingReminders').innerHTML = html;
-        } catch(e) { console.error(e); }
+    function viewStatement() {
+        var loanId = document.getElementById('selectLoan').value;
+        if (loanId) { window.open('/statement.html?loanId=' + loanId, '_blank'); }
+        else { alert('Please select a loan first'); }
     }
-    
-    async function loadOverdueReminders() {
-        try {
-            const response = await fetch('/api/reminders/overdue');
-            const reminders = await response.json();
-            let html = '';
-            if (reminders.length === 0) { html = '<div class="alert alert-success">No overdue payments! Good job!</div>'; }
-            else {
-                html = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Customer</th><th>Installment</th><th>Due Date</th><th>Amount</th><th>Days Overdue</th><th>Action</th></tr></thead><tbody>';
-                reminders.forEach(r => {
-                    html += '<tr style="background:#ffe8e8"><td><i class="fas fa-user-circle"></i> ' + r.customerName + '</td><td>#' + r.installmentNumber + '</td><td><i class="fas fa-calendar"></i> ' + new Date(r.dueDate).toLocaleDateString() + '</td><td>MWK ' + formatMoney(r.amountDue) + '</td><td><span class="badge bg-danger">' + r.daysOverdue + ' days</span></td><td><button class="btn btn-sm btn-danger" onclick="recordPaymentNow(' + r.loanId + ', ' + r.installmentNumber + ', ' + r.amountDue + ')">Record Payment</button></td></tr>';
-                });
-                html += '</tbody></table></div>';
-            }
-            document.getElementById('overdueReminders').innerHTML = html;
-        } catch(e) { console.error(e); }
-    }
-    
-    function showReminderTab(tab) {
-        if (tab === 'upcoming') {
-            document.getElementById('upcomingReminders').style.display = 'block';
-            document.getElementById('overdueReminders').style.display = 'none';
-            document.querySelectorAll('#reminderTabs .nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
-        } else {
-            document.getElementById('upcomingReminders').style.display = 'none';
-            document.getElementById('overdueReminders').style.display = 'block';
-            document.querySelectorAll('#reminderTabs .nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-    }
-    
-    async function recordPaymentNow(loanId, installmentNumber, amount) {
-        const payment = { loanId: loanId, installmentNumber: installmentNumber, amountPaid: amount, paymentMethod: "CASH", transactionReference: "REMINDER-" + Date.now() };
-        try {
-            const response = await fetch('/api/repayments/pay', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payment) });
-            if (response.ok) {
-                alert('Payment for loan #' + loanId + ', installment ' + installmentNumber + ' recorded successfully!');
-                loadUpcomingReminders(); loadOverdueReminders(); loadReminderSummary(); loadLoanSummary();
-            } else { alert('Failed to record payment'); }
-        } catch(e) { alert('Error recording payment'); }
-    }
-    
-    async function loadApprovedLoansForDocs() {
-        try {
-            const loans = await fetch('/api/loans').then(r => r.json());
-            const approvedLoans = loans.filter(l => l.status === 'APPROVED');
-            const docSelect = document.getElementById('docLoanId');
-            const viewSelect = document.getElementById('viewDocLoanId');
-            docSelect.innerHTML = '<option value="">-- Select approved loan --</option>';
-            viewSelect.innerHTML = '<option value="">-- Select a loan --</option>';
-            approvedLoans.forEach(loan => {
-                const option = '<option value="' + loan.id + '">Loan #' + loan.id + ' - ' + (loan.customer?.fullName) + ' - MWK ' + (loan.loanAmount?.toLocaleString()) + '</option>';
-                docSelect.innerHTML += option;
-                viewSelect.innerHTML += option;
-            });
-        } catch(e) { console.error(e); }
-    }
-    
-    async function uploadDocument() {
-        const loanId = document.getElementById('docLoanId').value;
-        const documentType = document.getElementById('docType').value;
-        if (!loanId) { document.getElementById('docUploadMsg').innerHTML = '<div class="alert alert-danger mt-2">Please select a loan</div>'; return; }
-        document.getElementById('docUploadMsg').innerHTML = '<div class="alert alert-info mt-2">Adding document record...</div>';
-        try {
-            const response = await fetch('/api/documents/add/' + loanId + '?documentType=' + documentType + '&uploadedBy=Admin', { method: 'POST' });
-            if (response.ok) {
-                document.getElementById('docUploadMsg').innerHTML = '<div class="alert alert-success mt-2">Document added successfully!</div>';
-                loadDocuments();
-                setTimeout(() => document.getElementById('docUploadMsg').innerHTML = '', 3000);
-            } else { document.getElementById('docUploadMsg').innerHTML = '<div class="alert alert-danger mt-2">Failed to add document</div>'; }
-        } catch(e) { document.getElementById('docUploadMsg').innerHTML = '<div class="alert alert-danger mt-2">Error adding document</div>'; }
-    }
-    
-    async function loadDocuments() {
-        const loanId = document.getElementById('viewDocLoanId').value;
-        if (!loanId) return;
-        try {
-            const summaryRes = await fetch('/api/documents/summary/' + loanId);
-            const summary = await summaryRes.json();
-            let summaryHtml = '<div class="row mb-3"><div class="col-md-3"><div class="alert alert-info text-center"><h4>' + summary.totalDocuments + '</h4><small>Total Documents</small></div></div><div class="col-md-3"><div class="alert alert-warning text-center"><h4>' + summary.pendingCount + '</h4><small>Pending</small></div></div><div class="col-md-3"><div class="alert alert-success text-center"><h4>' + summary.verifiedCount + '</h4><small>Verified</small></div></div><div class="col-md-3"><div class="alert alert-danger text-center"><h4>' + summary.rejectedCount + '</h4><small>Rejected</small></div></div></div>';
-            if (summary.missingDocuments && summary.missingDocuments.length > 0) { summaryHtml += '<div class="alert alert-warning">Missing documents: ' + summary.missingDocuments.join(', ') + '</div>'; }
-            if (summary.complete) { summaryHtml += '<div class="alert alert-success">All required documents uploaded! ✅</div>'; }
-            document.getElementById('docSummary').innerHTML = summaryHtml;
-            const docsRes = await fetch('/api/documents/loan/' + loanId);
-            const documents = await docsRes.json();
-            let docsHtml = '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Document Name</th><th>Type</th><th>Uploaded</th><th>Status</th><th>Action</th></tr></thead><tbody>';
-            documents.forEach(doc => {
-                const statusClass = doc.status === 'VERIFIED' ? 'badge-verified' : (doc.status === 'REJECTED' ? 'badge-rejected' : 'badge-pending');
-                docsHtml += '<tr><td><i class="fas fa-file-pdf"></i> ' + doc.documentName + '</td><td>' + doc.documentType + '</td><td>' + new Date(doc.uploadedAt).toLocaleDateString() + '</td><td><span class="' + statusClass + '">' + doc.status + '</span>' + (doc.rejectionReason ? '<br><small>' + doc.rejectionReason + '</small>' : '') + '</td><td><button class="btn btn-sm btn-success" onclick="verifyDocument(' + doc.id + ', \'VERIFIED\')"><i class="fas fa-check"></i> Verify</button> <button class="btn btn-sm btn-danger" onclick="rejectDocument(' + doc.id + ')"><i class="fas fa-times"></i> Reject</button> <button class="btn btn-sm btn-danger" onclick="deleteDocument(' + doc.id + ')"><i class="fas fa-trash"></i> Delete</button></td></tr>';
-            });
-            docsHtml += '</tbody></table></div>';
-            if (documents.length === 0) docsHtml = '<div class="text-muted">No documents uploaded yet</div>';
-            document.getElementById('documentList').innerHTML = docsHtml;
-        } catch(e) { console.error(e); }
-    }
-    
-    async function verifyDocument(docId, status) {
-        try { await fetch('/api/documents/verify/' + docId + '?status=' + status, { method: 'PUT' }); loadDocuments(); } 
-        catch(e) { alert('Error verifying document'); }
-    }
-    
-    async function rejectDocument(docId) {
-        const reason = prompt('Enter rejection reason:');
-        if (reason) {
-            try { await fetch('/api/documents/verify/' + docId + '?status=REJECTED&rejectionReason=' + encodeURIComponent(reason), { method: 'PUT' }); loadDocuments(); } 
-            catch(e) { alert('Error rejecting document'); }
-        }
-    }
-    
-    async function deleteDocument(docId) {
-        if (confirm('Delete this document?')) {
-            try { await fetch('/api/documents/' + docId, { method: 'DELETE' }); loadDocuments(); } 
-            catch(e) { alert('Error deleting document'); }
-        }
-    }
-    
-    function formatMoney(amount) { if (!amount) return '0'; return parseFloat(amount).toLocaleString(); }
     
     loadCustomers();
     loadStats();

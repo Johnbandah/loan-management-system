@@ -49,6 +49,27 @@
         .btn-primary { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
         .btn-success { background: #28a745; border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
         .btn-info { background: #17a2b8; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; color: white; }
+        .btn-warning { background: #f39c12; border: none; border-radius: 6px; padding: 10px 20px; font-weight: 500; color: white; }
+        
+        /* Password Eye Toggle Styles */
+        .password-wrapper {
+            position: relative;
+        }
+        .password-wrapper input {
+            padding-right: 40px;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            z-index: 10;
+        }
+        .password-toggle:hover {
+            color: #333;
+        }
         
         .table { margin-bottom: 0; width: 100%; border-collapse: collapse; }
         .table thead { background: #f8f9fa; }
@@ -61,6 +82,12 @@
         .reminder-info { background: #3498db; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
         
         .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar span { display: none; }
+            .main-content { margin-left: 70px; }
+        }
     </style>
 </head>
 <body>
@@ -73,6 +100,10 @@
         <a class="nav-link" onclick="showSection('payments')"><i class="fas fa-mobile-alt"></i> <span>Make Payment</span></a>
         <a class="nav-link" onclick="showSection('history')"><i class="fas fa-history"></i> <span>Payment History</span></a>
         <a class="nav-link" onclick="showSection('reminders')"><i class="fas fa-bell"></i> <span>Payment Reminders</span></a>
+        <a class="nav-link" onclick="showSection('profile')"><i class="fas fa-user-cog"></i> <span>Profile</span></a>
+        <a class="nav-link" onclick="showSection('apply')">
+    <i class="fas fa-file-alt"></i> <span>Apply for Loan</span>
+</a>
     </nav>
     <div class="logout-btn">
         <a class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
@@ -85,7 +116,6 @@
         <p class="mb-0 text-muted">Welcome back, <span id="welcomeName"></span>!</p>
     </div>
     
-    <!-- Overview Section with Stats -->
     <div id="overviewSection" class="section">
         <div class="row">
             <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-hand-holding-usd icon" style="color: #2a5298;"></i><div class="number" id="totalLoanAmount">MWK 0</div><div class="label">Total Loan Amount</div></div></div>
@@ -95,14 +125,15 @@
         </div>
     </div>
     
-    <!-- My Loans Section -->
     <div id="loansSection" class="section" style="display:none;">
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-list"></i> My Loans</div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead><tr><th>Loan ID</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Status</th><th>Action</th></tr></thead>
+                    <table class="table" id="loansTable">
+                        <thead>
+                            <tr><th>Loan ID</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Status</th><th>Action</th>
+                        </thead>
                         <tbody id="myLoansTbody"></tbody>
                     </table>
                 </div>
@@ -110,7 +141,6 @@
         </div>
     </div>
     
-    <!-- Make Payment Section -->
     <div id="paymentsSection" class="section" style="display:none;">
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-mobile-alt"></i> Pay with Mobile Money</div>
@@ -130,8 +160,7 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Mobile Number</label>
-                        <input type="tel" id="mobileNumber" class="form-control" placeholder="0999 123 456" value="0999123456">
-                        <small class="text-muted">Enter 10-digit mobile number</small>
+                        <input type="tel" id="mobileNumber" class="form-control" placeholder="0999 123 456">
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Payment Provider</label>
@@ -141,9 +170,7 @@
                         </select>
                     </div>
                     <div class="col-md-6 mb-3 d-flex align-items-end">
-                        <button class="btn btn-success w-100" onclick="payWithMobileMoney()">
-                            <i class="fas fa-mobile-alt"></i> Pay Now
-                        </button>
+                        <button class="btn btn-success w-100" onclick="payWithMobileMoney()"><i class="fas fa-mobile-alt"></i> Pay Now</button>
                     </div>
                 </div>
                 <div id="mobilePaymentMsg" class="mt-2"></div>
@@ -151,14 +178,15 @@
         </div>
     </div>
     
-    <!-- Payment History Section -->
     <div id="historySection" class="section" style="display:none;">
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-history"></i> Payment History</div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead><tr><th>Transaction ID</th><th>Amount (MWK)</th><th>Provider</th><th>Status</th><th>Date</th><th>Receipt</th></tr></thead>
+                    <table class="table" id="historyTable">
+                        <thead>
+                            <tr><th>Transaction ID</th><th>Amount (MWK)</th><th>Provider</th><th>Status</th><th>Date</th><th>Receipt</th>
+                        </thead>
                         <tbody id="paymentHistoryTbody"></tbody>
                     </table>
                 </div>
@@ -166,7 +194,6 @@
         </div>
     </div>
     
-    <!-- Payment Reminders Section -->
     <div id="remindersSection" class="section" style="display:none;">
         <div class="card-custom">
             <div class="card-header-custom"><i class="fas fa-bell"></i> Payment Reminders</div>
@@ -183,26 +210,200 @@
             </div>
         </div>
     </div>
+    <!-- Apply for Loan Section -->
+<div id="applySection" class="section" style="display:none;">
+    <div class="card-custom">
+        <div class="card-header-custom">
+            <i class="fas fa-file-alt"></i> Apply for a Loan
+        </div>
+        <div class="card-body">
+            <!-- Customer Information Display -->
+            <div class="alert alert-info">
+                <h5><i class="fas fa-user-circle"></i> Customer Information</h5>
+                <hr>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Name:</strong> <span id="applyName"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Email:</strong> <span id="applyEmail"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Phone:</strong> <span id="applyPhone"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>National ID:</strong> <span id="applyNationalId"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="loanApplicationForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Loan Amount (MWK) *</label>
+                        <input type="number" id="applyAmount" class="form-control" placeholder="Enter amount" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tenure (Months) *</label>
+                        <input type="number" id="applyTenure" class="form-control" placeholder="Enter months" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Loan Type *</label>
+                        <select id="applyLoanType" class="form-select" required>
+                            <option value="PERSONAL">Personal Loan</option>
+                            <option value="HOME">Home Loan</option>
+                            <option value="AUTO">Auto Loan</option>
+                            <option value="EDUCATION">Education Loan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Monthly Income (MWK) *</label>
+                        <input type="number" id="applyIncome" class="form-control" placeholder="Your monthly income" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employment Type *</label>
+                        <select id="applyEmployment" class="form-select" required>
+                            <option value="SALARIED">Salaried</option>
+                            <option value="SELF_EMPLOYED">Self-Employed</option>
+                            <option value="BUSINESS">Business Owner</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employer Name</label>
+                        <input type="text" id="applyEmployer" class="form-control" placeholder="Company name (optional)">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Purpose *</label>
+                        <textarea id="applyPurpose" class="form-control" rows="2" placeholder="What is the loan for?" required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+            </form>
+            <div id="applyMsg" class="mt-3"></div>
+        </div>
+    </div>
+    
+    <!-- My Applications -->
+    <div class="card-custom mt-3">
+        <div class="card-header-custom">
+            <i class="fas fa-list"></i> My Applications
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>Application ID</th><th>Amount</th><th>Tenure</th><th>Type</th><th>Status</th><th>Date</th>
+                    </thead>
+                    <tbody id="myApplicationsTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- My Applications -->
+    <div class="card-custom mt-3">
+        <div class="card-header-custom">
+            <i class="fas fa-list"></i> My Applications
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr><th>Application ID</th><th>Amount</th><th>Tenure</th><th>Type</th><th>Status</th><th>Date</th>
+                    </thead>
+                    <tbody id="myApplicationsTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <!-- Profile Section with Password Eye Toggle -->
+    <div id="profileSection" class="section" style="display:none;">
+        <div class="card-custom">
+            <div class="card-header-custom"><i class="fas fa-user-cog"></i> Profile Settings</div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-12"><h5><i class="fas fa-user"></i> Personal Information</h5><hr></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Full Name</label><input type="text" id="profileFullName" class="form-control"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Email</label><input type="email" id="profileEmail" class="form-control"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Phone</label><input type="text" id="profilePhone" class="form-control"></div>
+                    <div class="col-md-6 mb-3"><label class="form-label">Address</label><input type="text" id="profileAddress" class="form-control"></div>
+                    <div class="col-md-12">
+                        <button class="btn btn-primary" onclick="updateProfile()"><i class="fas fa-save"></i> Update Profile</button>
+                        <div id="profileMsg" class="mt-2"></div>
+                    </div>
+                </div>
+                
+                <!-- Change Password with Eye Icons -->
+                <div class="row">
+                    <div class="col-md-12"><h5><i class="fas fa-key"></i> Change Password</h5><hr></div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Current Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="oldPassword" class="form-control">
+                            <i class="fas fa-eye password-toggle" onclick="togglePassword('oldPassword', this)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="newPassword" class="form-control">
+                            <i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword', this)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirmPassword" class="form-control">
+                            <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword', this)"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <button class="btn btn-warning" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button>
+                        <div id="passwordMsg" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    let currentCustomerId = null;
+    var currentCustomerId = null;
+
+    // Password toggle function
+    function togglePassword(inputId, iconElement) {
+        var input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconElement.classList.remove('fa-eye');
+            iconElement.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            iconElement.classList.remove('fa-eye-slash');
+            iconElement.classList.add('fa-eye');
+        }
+    }
 
     function showSection(section) {
-        let sections = ['overview', 'loans', 'payments', 'history', 'reminders'];
-        for (let i = 0; i < sections.length; i++) {
-            let sec = sections[i] + 'Section';
-            if (document.getElementById(sec)) {
-                document.getElementById(sec).style.display = 'none';
-            }
+        var sections = document.querySelectorAll('.section');
+        for (var i = 0; i < sections.length; i++) {
+            sections[i].style.display = 'none';
         }
-        let targetSection = document.getElementById(section + 'Section');
-        if (targetSection) {
-            targetSection.style.display = 'block';
-        }
+        var target = document.getElementById(section + 'Section');
+        if (target) target.style.display = 'block';
         
-        let navLinks = document.querySelectorAll('.sidebar .nav-link');
-        for (let i = 0; i < navLinks.length; i++) {
+        var navLinks = document.querySelectorAll('.sidebar .nav-link');
+        for (var i = 0; i < navLinks.length; i++) {
             navLinks[i].classList.remove('active');
         }
         if (event && event.target) {
@@ -214,29 +415,33 @@
         if (section === 'payments') loadLoansForPayment();
         if (section === 'history') loadPaymentHistory();
         if (section === 'reminders') loadReminders();
+        if (section === 'profile') loadProfile();
     }
     
     function formatMoney(amount) {
         if (!amount || amount === 0) return '0';
-        return amount.toLocaleString();
+        return Number(amount).toLocaleString();
     }
     
     async function loadOverview() {
         try {
-            let response = await fetch('/api/loans/customer/' + currentCustomerId);
-            let loans = await response.json();
+            var response = await fetch('/api/loans/customer/' + currentCustomerId);
+            var loans = await response.json();
             
-            let totalLoan = 0, totalPaid = 0, remaining = 0, nextDate = null;
+            var totalLoan = 0;
+            var totalPaid = 0;
+            var remaining = 0;
+            var nextDate = null;
             
-            for (let i = 0; i < loans.length; i++) {
-                let loan = loans[i];
-                totalLoan += loan.loanAmount;
-                totalPaid += loan.amountPaid || 0;
-                remaining += loan.remainingBalance || (loan.totalPayable - (loan.amountPaid || 0));
+            for (var i = 0; i < loans.length; i++) {
+                var loan = loans[i];
+                totalLoan = totalLoan + loan.loanAmount;
+                totalPaid = totalPaid + (loan.amountPaid || 0);
+                remaining = remaining + (loan.remainingBalance || (loan.totalPayable - (loan.amountPaid || 0)));
                 
-                let histRes = await fetch('/api/repayments/history/' + loan.id);
-                let history = await histRes.json();
-                for (let j = 0; j < history.length; j++) {
+                var histRes = await fetch('/api/repayments/history/' + loan.id);
+                var history = await histRes.json();
+                for (var j = 0; j < history.length; j++) {
                     if (history[j].status === 'PENDING' && !nextDate) {
                         nextDate = history[j].dueDate;
                         break;
@@ -251,226 +456,414 @@
         } catch(e) { console.error(e); }
     }
     
-    async function loadLoans() {
-        try {
-            let response = await fetch('/api/loans/customer/' + currentCustomerId);
-            let loans = await response.json();
-            let tbody = document.getElementById('myLoansTbody');
-            tbody.innerHTML = '';
-            
-            if (loans.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found<\/td><\/tr>';
-                return;
-            }
-            
-            for (let i = 0; i < loans.length; i++) {
-                let loan = loans[i];
-                let statusClass = loan.status === 'APPROVED' ? 'badge-approved' : 'badge-pending';
-                let row = '<tr>' +
-                    '<td>' + loan.id + '</td>' +
-                    '<td>MWK ' + formatMoney(loan.loanAmount) + '</td>' +
-                    '<td>' + loan.tenureMonths + ' months<\/td>' +
-                    '<td>MWK ' + formatMoney(loan.emiAmount) + '<\/td>' +
-                    '<td><span class="' + statusClass + '">' + loan.status + '<\/span><\/td>' +
-                    '<td><button class="btn btn-info btn-sm" onclick="window.open(\'/statement.html?loanId=' + loan.id + '\', \'_blank\')">Statement<\/button><\/td>' +
-                '<\/tr>';
-                tbody.innerHTML += row;
-            }
-        } catch(e) { console.error(e); }
-    }
-    
-    async function loadLoansForPayment() {
-        try {
-            let response = await fetch('/api/loans/customer/' + currentCustomerId);
-            let loans = await response.json();
-            let select = document.getElementById('payLoanId');
-            select.innerHTML = '<option value="">-- Select a loan --</option>';
-            for (let i = 0; i < loans.length; i++) {
-                let loan = loans[i];
-                if (loan.status === 'APPROVED') {
-                    select.innerHTML += '<option value="' + loan.id + '">Loan #' + loan.id + ' - MWK ' + formatMoney(loan.loanAmount) + '<\/option>';
+    function loadLoans() {
+        var tbody = document.getElementById('myLoansTbody');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+        
+        fetch('/api/loans/customer/' + currentCustomerId)
+            .then(function(response) { return response.json(); })
+            .then(function(loans) {
+                tbody.innerHTML = '';
+                
+                if (loans.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found</td></tr>';
+                    return;
                 }
-            }
-        } catch(e) { console.error(e); }
+                
+                var html = '';
+                for (var i = 0; i < loans.length; i++) {
+                    var loan = loans[i];
+                    var statusClass = loan.status === 'APPROVED' ? 'badge-approved' : 'badge-pending';
+                    html += '<tr>';
+                    html += '<td>' + loan.id + '</td>';
+                    html += '<td>MWK ' + formatMoney(loan.loanAmount) + '</td>';
+                    html += '<td>' + loan.tenureMonths + ' months</td>';
+                    html += '<td>MWK ' + formatMoney(loan.emiAmount) + '</td>';
+                    html += '<td><span class="' + statusClass + '">' + loan.status + '</span></td>';
+                    html += '<td><button class="btn btn-info btn-sm" onclick="window.open(\'/statement.html?loanId=' + loan.id + '\', \'_blank\')">Statement</button></td>';
+                    html += '</tr>';
+                }
+                tbody.innerHTML = html;
+            })
+            .catch(function(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading loans</td></tr>';
+            });
+    }
+
+    // Apply for Loan Form
+document.getElementById('loanApplicationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const application = {
+        requestedAmount: parseFloat(document.getElementById('applyAmount').value),
+        tenureMonths: parseInt(document.getElementById('applyTenure').value),
+        loanType: document.getElementById('applyLoanType').value,
+        purpose: document.getElementById('applyPurpose').value,
+        monthlyIncome: parseFloat(document.getElementById('applyIncome').value),
+        employmentType: document.getElementById('applyEmployment').value,
+        employerName: document.getElementById('applyEmployer').value
+    };
+    
+    document.getElementById('applyMsg').innerHTML = '<div class="alert alert-info">Submitting application...</div>';
+    
+    try {
+        const response = await fetch('/api/loan-applications/apply/' + currentCustomerId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(application)
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('applyMsg').innerHTML = '<div class="alert alert-success">' + data.message + '<br>Application ID: ' + data.applicationId + '</div>';
+            // Clear form
+            document.getElementById('applyAmount').value = '';
+            document.getElementById('applyTenure').value = '';
+            document.getElementById('applyPurpose').value = '';
+            document.getElementById('applyIncome').value = '';
+            document.getElementById('applyEmployer').value = '';
+            loadMyApplications();
+            setTimeout(function() { document.getElementById('applyMsg').innerHTML = ''; }, 5000);
+        } else {
+            document.getElementById('applyMsg').innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+        }
+    } catch(e) {
+        document.getElementById('applyMsg').innerHTML = '<div class="alert alert-danger">Error submitting application</div>';
+    }
+});
+
+// Load my applications
+async function loadMyApplications() {
+    try {
+        const response = await fetch('/api/loan-applications/my-applications/' + currentCustomerId);
+        const applications = await response.json();
+        const tbody = document.getElementById('myApplicationsTbody');
+        tbody.innerHTML = '';
+        
+        if (applications.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No applications found</td></tr>';
+            return;
+        }
+        
+        var html = '';
+        for (var i = 0; i < applications.length; i++) {
+            var app = applications[i];
+            var statusClass = app.status === 'APPROVED' ? 'badge-approved' : (app.status === 'REJECTED' ? 'badge-pending' : 'badge-pending');
+            html += '<tr>' +
+                '<td>' + app.id + '</td>' +
+                '<td>MWK ' + formatMoney(app.requestedAmount) + '</td>' +
+                '<td>' + app.tenureMonths + ' months</td>' +
+                '<td>' + app.loanType + '</td>' +
+                '<td><span class="' + statusClass + '">' + app.status + '</span></td>' +
+                '<td>' + new Date(app.applicationDate).toLocaleDateString() + '</td>' +
+            '</tr>';
+        }
+        tbody.innerHTML = html;
+    } catch(e) { console.error(e); }
+}
+    
+    function loadLoansForPayment() {
+        fetch('/api/loans/customer/' + currentCustomerId)
+            .then(function(response) { return response.json(); })
+            .then(function(loans) {
+                var select = document.getElementById('payLoanId');
+                select.innerHTML = '<option value="">-- Select a loan --</option>';
+                for (var i = 0; i < loans.length; i++) {
+                    var loan = loans[i];
+                    if (loan.status === 'APPROVED') {
+                        select.innerHTML += '<option value="' + loan.id + '">Loan #' + loan.id + ' - MWK ' + formatMoney(loan.loanAmount) + '</option>';
+                    }
+                }
+            })
+            .catch(function(e) { console.error(e); });
     }
     
-    async function loadInstallments() {
-        let loanId = document.getElementById('payLoanId').value;
+    function loadInstallments() {
+        var loanId = document.getElementById('payLoanId').value;
         if (!loanId) return;
         
-        try {
-            let response = await fetch('/api/repayments/history/' + loanId);
-            let history = await response.json();
-            let select = document.getElementById('payInstallment');
-            select.innerHTML = '<option value="">-- Select installment --</option>';
-            for (let i = 0; i < history.length; i++) {
-                let p = history[i];
-                if (p.status === 'PENDING') {
-                    select.innerHTML += '<option value="' + p.installmentNumber + '">Installment #' + p.installmentNumber + ' - Due: ' + new Date(p.dueDate).toLocaleDateString() + ' - MWK ' + formatMoney(p.amountDue) + '<\/option>';
+        fetch('/api/repayments/history/' + loanId)
+            .then(function(response) { return response.json(); })
+            .then(function(history) {
+                var select = document.getElementById('payInstallment');
+                select.innerHTML = '<option value="">-- Select installment --</option>';
+                var hasPending = false;
+                for (var i = 0; i < history.length; i++) {
+                    var p = history[i];
+                    if (p.status === 'PENDING') {
+                        hasPending = true;
+                        select.innerHTML += '<option value="' + p.installmentNumber + '">Installment #' + p.installmentNumber + ' - Due: ' + new Date(p.dueDate).toLocaleDateString() + ' - MWK ' + formatMoney(p.amountDue) + '</option>';
+                    }
                 }
-            }
-            if (select.options.length === 1) {
-                select.innerHTML = '<option value="">No pending installments</option>';
-            }
-        } catch(e) { console.error(e); }
+                if (!hasPending) {
+                    select.innerHTML = '<option value="">No pending installments</option>';
+                }
+            })
+            .catch(function(e) { console.error(e); });
     }
     
-    async function payWithMobileMoney() {
-        let loanId = document.getElementById('payLoanId').value;
-        let installmentNumber = document.getElementById('payInstallment').value;
-        let mobileNumber = document.getElementById('mobileNumber').value;
-        let provider = document.getElementById('provider').value;
+    function payWithMobileMoney() {
+        var loanId = document.getElementById('payLoanId').value;
+        var installmentNumber = document.getElementById('payInstallment').value;
+        var mobileNumber = document.getElementById('mobileNumber').value;
+        var provider = document.getElementById('provider').value;
         
-        if (!loanId || !installmentNumber) {
-            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please select loan and installment</div>';
-            return;
-        }
-        
-        if (!mobileNumber) {
-            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please enter mobile number</div>';
-            return;
-        }
-        
-        if (!/^[0-9]{10}$/.test(mobileNumber)) {
-            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please enter a valid 10-digit mobile number</div>';
+        if (!loanId || !installmentNumber || !mobileNumber) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Please fill all fields</div>';
             return;
         }
         
         document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-info">Processing payment request...</div>';
         
-        try {
-            let response = await fetch('/api/mobile-payment/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerId: currentCustomerId,
-                    loanId: parseInt(loanId),
-                    installmentNumber: parseInt(installmentNumber),
-                    mobileNumber: mobileNumber,
-                    provider: provider
-                })
-            });
-            let data = await response.json();
-            
+        fetch('/api/mobile-payment/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customerId: currentCustomerId,
+                loanId: parseInt(loanId),
+                installmentNumber: parseInt(installmentNumber),
+                mobileNumber: mobileNumber,
+                provider: provider
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
             if (data.success) {
-                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-success">' + data.message + '<br>Transaction ID: ' + data.transactionId + '<br>Amount: MWK ' + formatMoney(data.amount) + '<\/div>';
+                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-success">' + data.message + '<br>Transaction ID: ' + data.transactionId + '<br>Amount: MWK ' + formatMoney(data.amount) + '</div>';
                 setTimeout(function() { location.reload(); }, 3000);
             } else {
-                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">' + data.message + '<\/div>';
+                document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
             }
-        } catch(e) {
-            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Payment request failed<\/div>';
-        }
+        })
+        .catch(function(e) {
+            document.getElementById('mobilePaymentMsg').innerHTML = '<div class="alert alert-danger">Payment request failed</div>';
+        });
     }
     
-    async function loadPaymentHistory() {
-        try {
-            let response = await fetch('/api/mobile-payment/history/' + currentCustomerId);
-            let history = await response.json();
-            let tbody = document.getElementById('paymentHistoryTbody');
-            tbody.innerHTML = '';
-            
-            if (history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No payment history found<\/td><\/tr>';
-                return;
-            }
-            
-            for (let i = 0; i < history.length; i++) {
-                let p = history[i];
-                let row = '<tr>' +
-                    '<td>' + p.transactionId + '<\/td>' +
-                    '<td>MWK ' + formatMoney(p.amount) + '<\/td>' +
-                    '<td>' + (p.provider === 'AIRTEL_MONEY' ? 'Airtel Money' : 'TNM Mpamba') + '<\/td>' +
-                    '<td><span class="badge-success">' + p.status + '<\/span><\/td>' +
-                    '<td>' + new Date(p.requestedAt).toLocaleString() + '<\/td>' +
-                    '<td><button class="btn btn-info btn-sm" onclick="downloadReceipt(' + p.id + ')">Receipt<\/button><\/td>' +
-                '<\/tr>';
-                tbody.innerHTML += row;
-            }
-        } catch(e) { console.error(e); }
-    }
-    
-    async function loadReminders() {
-        try {
-            let response = await fetch('/api/loans/customer/' + currentCustomerId);
-            let loans = await response.json();
-            let remindersHtml = '';
-            let hasReminders = false;
-            
-            for (let i = 0; i < loans.length; i++) {
-                let loan = loans[i];
-                let historyRes = await fetch('/api/repayments/history/' + loan.id);
-                let history = await historyRes.json();
-                let now = new Date();
+    function loadPaymentHistory() {
+        var tbody = document.getElementById('paymentHistoryTbody');
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+        
+        fetch('/api/mobile-payment/history/' + currentCustomerId)
+            .then(function(response) { return response.json(); })
+            .then(function(history) {
+                tbody.innerHTML = '';
                 
-                for (let j = 0; j < history.length; j++) {
-                    let repayment = history[j];
-                    if (repayment.status === 'PENDING') {
-                        let dueDate = new Date(repayment.dueDate);
-                        let daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
-                        let daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
-                        
-                        if (daysUntil >= 0 && daysUntil <= 30) {
-                            hasReminders = true;
-                            let priorityClass = '';
-                            let priorityText = '';
-                            
-                            if (daysUntil <= 3) {
-                                priorityClass = 'reminder-urgent';
-                                priorityText = 'URGENT - Due in ' + daysUntil + ' days';
-                            } else if (daysUntil <= 7) {
-                                priorityClass = 'reminder-warning';
-                                priorityText = 'Due in ' + daysUntil + ' days';
-                            } else {
-                                priorityClass = 'reminder-info';
-                                priorityText = 'Due in ' + daysUntil + ' days';
-                            }
-                            
-                            remindersHtml += '<div class="card mb-2"><div class="card-body"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
-                                '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
-                                '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
-                                '<div class="col-md-2"><span class="' + priorityClass + '">' + priorityText + '</span></div></div></div></div>';
-                        } else if (daysOverdue > 0) {
-                            hasReminders = true;
-                            remindersHtml += '<div class="card mb-2 border-danger"><div class="card-body bg-light"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
-                                '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
-                                '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
-                                '<div class="col-md-2"><span class="reminder-urgent">OVERDUE by ' + daysOverdue + ' days</span></div></div></div></div>';
-                        }
-                    }
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No payment history found</td></tr>';
+                    return;
                 }
+                
+                var html = '';
+                for (var i = 0; i < history.length; i++) {
+                    var p = history[i];
+                    html += '<tr>';
+                    html += '<td>' + p.transactionId + '</td>';
+                    html += '<td>MWK ' + formatMoney(p.amount) + '</td>';
+                    html += '<td>' + (p.provider === 'AIRTEL_MONEY' ? 'Airtel Money' : 'TNM Mpamba') + '</td>';
+                    html += '<td><span class="badge-success">' + p.status + '</span></td>';
+                    html += '<td>' + new Date(p.requestedAt).toLocaleString() + '</td>';
+                    html += '<td><button class="btn btn-info btn-sm" onclick="downloadReceipt(' + p.id + ')">Receipt</button></td>';
+                    html += '</tr>';
+                }
+                tbody.innerHTML = html;
+            })
+            .catch(function(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading payment history</td></tr>';
+            });
+    }
+    
+    function loadReminders() {
+        fetch('/api/loans/customer/' + currentCustomerId)
+            .then(function(response) { return response.json(); })
+            .then(function(loans) {
+                var html = '';
+                var hasReminders = false;
+                var now = new Date();
+                
+                var promises = [];
+                for (var i = 0; i < loans.length; i++) {
+                    promises.push(
+                        fetch('/api/repayments/history/' + loans[i].id)
+                            .then(function(response) { return response.json(); })
+                    );
+                }
+                
+                Promise.all(promises)
+                    .then(function(results) {
+                        for (var i = 0; i < loans.length; i++) {
+                            var loan = loans[i];
+                            var history = results[i];
+                            
+                            for (var j = 0; j < history.length; j++) {
+                                var repayment = history[j];
+                                if (repayment.status === 'PENDING') {
+                                    var dueDate = new Date(repayment.dueDate);
+                                    var daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                                    var daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+                                    
+                                    if (daysUntil >= 0 && daysUntil <= 30) {
+                                        hasReminders = true;
+                                        var priorityClass = '';
+                                        var priorityText = '';
+                                        
+                                        if (daysUntil <= 3) {
+                                            priorityClass = 'reminder-urgent';
+                                            priorityText = 'URGENT - Due in ' + daysUntil + ' days';
+                                        } else if (daysUntil <= 7) {
+                                            priorityClass = 'reminder-warning';
+                                            priorityText = 'Due in ' + daysUntil + ' days';
+                                        } else {
+                                            priorityClass = 'reminder-info';
+                                            priorityText = 'Due in ' + daysUntil + ' days';
+                                        }
+                                        
+                                        html += '<div class="card mb-2"><div class="card-body"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
+                                            '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
+                                            '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
+                                            '<div class="col-md-2"><span class="' + priorityClass + '">' + priorityText + '</span></div></div></div></div>';
+                                    } else if (daysOverdue > 0) {
+                                        hasReminders = true;
+                                        html += '<div class="card mb-2 border-danger"><div class="card-body bg-light"><div class="row"><div class="col-md-4"><strong>Loan #' + loan.id + '</strong><br>Installment #' + repayment.installmentNumber + '</div>' +
+                                            '<div class="col-md-3">Amount: MWK ' + formatMoney(repayment.amountDue) + '</div>' +
+                                            '<div class="col-md-3">Due Date: ' + dueDate.toLocaleDateString() + '</div>' +
+                                            '<div class="col-md-2"><span class="reminder-urgent">OVERDUE by ' + daysOverdue + ' days</span></div></div></div></div>';
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (!hasReminders) {
+                            html = '<div class="alert alert-success">No upcoming payments! You are all caught up.</div>';
+                        }
+                        document.getElementById('remindersList').innerHTML = html;
+                    });
+            })
+            .catch(function(e) { console.error(e); });
+    }
+    
+    function loadProfile() {
+        fetch('/api/auth/me')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.loggedIn) {
+                    document.getElementById('profileFullName').value = data.customerName || '';
+                    document.getElementById('profileEmail').value = data.email || '';
+                    return fetch('/api/customers/' + currentCustomerId);
+                }
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(customer) {
+                if (customer) {
+                    document.getElementById('profilePhone').value = customer.phone || '';
+                    document.getElementById('profileAddress').value = customer.address || '';
+                }
+            })
+            .catch(function(e) { console.error(e); });
+    }
+
+    function updateProfile() {
+        var fullName = document.getElementById('profileFullName').value;
+        var email = document.getElementById('profileEmail').value;
+        var phone = document.getElementById('profilePhone').value;
+        var address = document.getElementById('profileAddress').value;
+        
+        if (!fullName || !email || !phone) {
+            document.getElementById('profileMsg').innerHTML = '<div class="alert alert-danger">Please fill all required fields</div>';
+            return;
+        }
+        
+        fetch('/api/customers/' + currentCustomerId + '/update-profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName: fullName, email: email, phone: phone, address: address })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (response.ok) {
+                document.getElementById('profileMsg').innerHTML = '<div class="alert alert-success">Profile updated successfully!</div>';
+                document.getElementById('welcomeName').innerText = fullName;
+                setTimeout(function() { document.getElementById('profileMsg').innerHTML = ''; }, 3000);
+            } else {
+                document.getElementById('profileMsg').innerHTML = '<div class="alert alert-danger">' + data + '</div>';
             }
-            
-            if (!hasReminders) {
-                remindersHtml = '<div class="alert alert-success">No upcoming payments! You are all caught up.</div>';
+        })
+        .catch(function(e) {
+            document.getElementById('profileMsg').innerHTML = '<div class="alert alert-danger">Error updating profile</div>';
+        });
+    }
+
+    function changePassword() {
+        var oldPassword = document.getElementById('oldPassword').value;
+        var newPassword = document.getElementById('newPassword').value;
+        var confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-danger">Please fill all fields</div>';
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-danger">New passwords do not match</div>';
+            return;
+        }
+        
+        if (newPassword.length < 6) {
+            document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-danger">Password must be at least 6 characters</div>';
+            return;
+        }
+        
+        fetch('/api/customers/' + currentCustomerId + '/change-password', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (response.ok) {
+                document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-success">Password changed successfully!</div>';
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                setTimeout(function() { document.getElementById('passwordMsg').innerHTML = ''; }, 3000);
+            } else {
+                document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-danger">' + data + '</div>';
             }
-            
-            document.getElementById('remindersList').innerHTML = remindersHtml;
-        } catch(e) { console.error(e); }
+        })
+        .catch(function(e) {
+            document.getElementById('passwordMsg').innerHTML = '<div class="alert alert-danger">Error changing password</div>';
+        });
     }
     
     function downloadReceipt(paymentId) {
         window.open('/api/receipts/payment/' + paymentId, '_blank');
     }
     
-    async function logout() {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/customer-dashboard.html';
+    function logout() {
+        fetch('/api/auth/logout', { method: 'POST' })
+            .then(function() {
+                window.location.href = '/login.html';
+            });
     }
     
-    async function initDashboard() {
-        try {
-            let response = await fetch('/api/auth/me');
-            let data = await response.json();
-            
-            if (data.loggedIn) {
-                currentCustomerId = data.customerId;
-                document.getElementById('welcomeName').innerText = data.customerName;
-                loadOverview();
-            } else {
-                window.location.href = '/customer-dashboard.html';
-            }
-        } catch(e) { console.error(e); }
+    function initDashboard() {
+        fetch('/api/auth/me')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.loggedIn) {
+                    currentCustomerId = data.customerId;
+                    document.getElementById('welcomeName').innerText = data.customerName;
+                    loadOverview();
+                } else {
+                    window.location.href = '/login.html';
+                }
+            })
+            .catch(function(e) {
+                console.error(e);
+                window.location.href = '/login.html';
+            });
     }
     
     initDashboard();

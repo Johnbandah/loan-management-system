@@ -25,6 +25,9 @@ public class Customer {
     @Column(unique = true)
     private String panNumber;
     
+    @Column(unique = true)
+    private String nationalId;
+    
     private Integer creditScore;
     
     private String kycStatus = "PENDING";
@@ -32,11 +35,17 @@ public class Customer {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
-    // NEW FIELDS FOR LOGIN
+    // Login fields
     @Column(unique = true)
     private String username;
     
     private String password;
+    
+    // Bank Account Fields
+    private String bankName;
+    private String bankAccountNumber;
+    private String bankAccountName;
+    private String mobileMoneyNumber;
     
     // Getters and Setters
     public Long getId() { return id; }
@@ -57,6 +66,9 @@ public class Customer {
     public String getPanNumber() { return panNumber; }
     public void setPanNumber(String panNumber) { this.panNumber = panNumber; }
     
+    public String getNationalId() { return nationalId; }
+    public void setNationalId(String nationalId) { this.nationalId = nationalId; }
+    
     public Integer getCreditScore() { return creditScore; }
     public void setCreditScore(Integer creditScore) { this.creditScore = creditScore; }
     
@@ -66,10 +78,21 @@ public class Customer {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    // NEW GETTERS AND SETTERS FOR LOGIN
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    public String getBankName() { return bankName; }
+    public void setBankName(String bankName) { this.bankName = bankName; }
+    
+    public String getBankAccountNumber() { return bankAccountNumber; }
+    public void setBankAccountNumber(String bankAccountNumber) { this.bankAccountNumber = bankAccountNumber; }
+    
+    public String getBankAccountName() { return bankAccountName; }
+    public void setBankAccountName(String bankAccountName) { this.bankAccountName = bankAccountName; }
+    
+    public String getMobileMoneyNumber() { return mobileMoneyNumber; }
+    public void setMobileMoneyNumber(String mobileMoneyNumber) { this.mobileMoneyNumber = mobileMoneyNumber; }
 }

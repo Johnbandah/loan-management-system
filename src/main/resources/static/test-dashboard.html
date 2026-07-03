@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dashboard</title>
+</head>
+<body>
+    <h1>Login Successful!</h1>
+    <p>You are logged in as: <span id="userName"></span></p>
+    <button onclick="logout()">Logout</button>
+    
+    <script>
+        // Check if logged in
+        fetch('/api/auth/me')
+            .then(r => r.json())
+            .then(data => {
+                if (data.loggedIn) {
+                    document.getElementById('userName').innerText = data.customerName;
+                } else {
+                    window.location.href = '/customer-login.html';
+                }
+            });
+            
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => window.location.href = '/customer-login.html');
+        }
+    </script>
+</body>
+</html>

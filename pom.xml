@@ -42,7 +42,7 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		
-		<!-- Spring Boot Mail -->
+		<!-- Spring Boot Mail - REQUIRED FOR EMAIL -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
@@ -76,7 +76,7 @@
 			<version>5.2.5</version>
 		</dependency>
 		
-		<!-- OpenPDF for PDF Generation (Receipts) -->
+		<!-- OpenPDF for PDF Generation -->
 		<dependency>
 			<groupId>com.github.librepdf</groupId>
 			<artifactId>openpdf</artifactId>

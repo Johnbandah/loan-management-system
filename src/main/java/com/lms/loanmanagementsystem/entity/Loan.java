@@ -30,10 +30,10 @@ public class Loan {
     private BigDecimal totalPayable;
     
     @Column(length = 50)
-    private String loanType; // PERSONAL, HOME, AUTO, EDUCATION
+    private String loanType;
     
     @Column(length = 20)
-    private String status = "PENDING"; // PENDING, APPROVED, REJECTED, ACTIVE, CLOSED
+    private String status = "PENDING";
     
     private String purpose;
     
@@ -43,10 +43,22 @@ public class Loan {
     
     private String rejectionReason;
     
-    // NEW FIELDS FOR REPAYMENT TRACKING
+    // Repayment tracking fields
     private BigDecimal amountPaid = BigDecimal.ZERO;
     private BigDecimal remainingBalance;
     private Integer installmentsPaid = 0;
+    
+    // Disbursement tracking fields (NEW)
+    @Column(nullable = false)
+    private BigDecimal amountDisbursed = BigDecimal.ZERO;
+    
+    private LocalDateTime disbursementDate;
+    
+    private String disbursementMethod; // BANK_TRANSFER, MOBILE_MONEY, CASH, CHEQUE
+    
+    private String disbursementReference;
+    
+    private String disbursedBy;
     
     // Getters and Setters
     public Long getId() { return id; }
@@ -88,7 +100,6 @@ public class Loan {
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
     
-    // NEW GETTERS AND SETTERS FOR REPAYMENT TRACKING
     public BigDecimal getAmountPaid() { return amountPaid; }
     public void setAmountPaid(BigDecimal amountPaid) { this.amountPaid = amountPaid; }
     
@@ -97,4 +108,20 @@ public class Loan {
     
     public Integer getInstallmentsPaid() { return installmentsPaid; }
     public void setInstallmentsPaid(Integer installmentsPaid) { this.installmentsPaid = installmentsPaid; }
+    
+    // NEW GETTERS AND SETTERS FOR DISBURSEMENT
+    public BigDecimal getAmountDisbursed() { return amountDisbursed; }
+    public void setAmountDisbursed(BigDecimal amountDisbursed) { this.amountDisbursed = amountDisbursed; }
+    
+    public LocalDateTime getDisbursementDate() { return disbursementDate; }
+    public void setDisbursementDate(LocalDateTime disbursementDate) { this.disbursementDate = disbursementDate; }
+    
+    public String getDisbursementMethod() { return disbursementMethod; }
+    public void setDisbursementMethod(String disbursementMethod) { this.disbursementMethod = disbursementMethod; }
+    
+    public String getDisbursementReference() { return disbursementReference; }
+    public void setDisbursementReference(String disbursementReference) { this.disbursementReference = disbursementReference; }
+    
+    public String getDisbursedBy() { return disbursedBy; }
+    public void setDisbursedBy(String disbursedBy) { this.disbursedBy = disbursedBy; }
 }

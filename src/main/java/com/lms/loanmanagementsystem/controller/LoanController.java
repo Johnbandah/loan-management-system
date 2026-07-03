@@ -86,7 +86,7 @@ public class LoanController {
             .orElse(ResponseEntity.notFound().build());
     }
     
-    // Approve loan (with email notification)
+    // Approve loan
     @PutMapping("/{id}/approve")
     public ResponseEntity<Loan> approveLoan(@PathVariable Long id) {
         return loanRepository.findById(id)
@@ -104,6 +104,47 @@ public class LoanController {
                 }
                 
                 return ResponseEntity.ok(approvedLoan);
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+    
+    // Disburse loan (mark as money sent to customer)
+    @PutMapping("/{id}/disburse")
+    public ResponseEntity<?> disburseLoan(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        return loanRepository.findById(id)
+            .map(loan -> {
+                if (!loan.getStatus().equals("APPROVED")) {
+                    return ResponseEntity.badRequest().body("Loan must be approved first");
+                }
+                
+                if (loan.getAmountDisbursed().compareTo(BigDecimal.ZERO) > 0) {
+                    return ResponseEntity.badRequest().body("Loan already disbursed");
+                }
+                
+                // Set disbursement details
+                loan.setAmountDisbursed(loan.getLoanAmount());
+                loan.setDisbursementDate(LocalDateTime.now());
+                loan.setDisbursementMethod(request.get("method"));
+                loan.setDisbursementReference(request.get("reference"));
+                loan.setDisbursedBy(request.get("disbursedBy"));
+                loan.setStatus("ACTIVE");
+                
+                // Update remaining balance
+                if (loan.getRemainingBalance() == null) {
+                    loan.setRemainingBalance(loan.getTotalPayable());
+                }
+                
+                Loan disbursedLoan = loanRepository.save(loan);
+                
+                // Send email notification
+                try {
+                    emailService.sendLoanDisbursementEmail(disbursedLoan);
+                    System.out.println("✅ Disbursement email sent for loan: " + id);
+                } catch (Exception e) {
+                    System.err.println("❌ Failed to send disbursement email: " + e.getMessage());
+                }
+                
+                return ResponseEntity.ok(disbursedLoan);
             })
             .orElse(ResponseEntity.notFound().build());
     }
