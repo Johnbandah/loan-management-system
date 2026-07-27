@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Statement</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 20px;
+        }
+        .statement-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #1e3c72;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #1e3c72;
+            font-weight: 700;
+        }
+        .header .subtitle {
+            color: #6b7a8f;
+        }
+        .loan-details {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .loan-details .row {
+            margin-bottom: 10px;
+        }
+        .loan-details .label {
+            font-weight: 600;
+            color: #1f3a5f;
+        }
+        .table thead {
+            background: #1e3c72;
+            color: white;
+        }
+        .table th {
+            border: none;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .status-paid {
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending {
+            background: #ffc107;
+            color: #7a6200;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-overdue {
+            background: #dc3545;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-print {
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-print:hover {
+            background: #2a5298;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+        }
+        .summary-box {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        .summary-box .number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .summary-box .label {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+        @media print {
+            .no-print { display: none; }
+            .statement-container { box-shadow: none; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="statement-container" id="statementContainer">
+        <div class="header">
+            <h1><i class="fas fa-file-invoice"></i> Loan Statement</h1>
+            <p class="subtitle">Loan Management System</p>
+        </div>
+
+        <div class="loan-details" id="loanDetails">
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="label">Loan ID:</span> <span id="loanId">-</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="label">Status:</span> <span id="loanStatus">-</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="label">Customer:</span> <span id="customerName">-</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="label">Disbursed Date:</span> <span id="disbursedDate">-</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="label">Loan Amount:</span> <span id="loanAmount">-</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="label">Interest Rate:</span> <span id="interestRate">-</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="label">Tenure:</span> <span id="tenure">-</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="label">Monthly EMI:</span> <span id="emiAmount">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="summary-box">
+                    <div class="number" id="totalPaid">MWK 0</div>
+                    <div class="label">Total Paid</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-box" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <div class="number" id="remainingBalance">MWK 0</div>
+                    <div class="label">Remaining Balance</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-box" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                    <div class="number" id="progressPercent">0%</div>
+                    <div class="label">Progress</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="summary-box" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                    <div class="number" id="installmentsPaid">0/0</div>
+                    <div class="label">Installments Paid</div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-3"><i class="fas fa-list"></i> Payment Schedule</h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Due Date</th>
+                        <th>Amount Due</th>
+                        <th>Paid Date</th>
+                        <th>Amount Paid</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="repaymentsBody">
+                    <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-4 no-print">
+            <button class="btn-print me-2" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Statement
+            </button>
+            <button class="btn-back" onclick="window.close()">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            alert('Please login first');
+            window.location.href = '/login.html';
+        }
+
+        function getHeaders() {
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function formatMoney(amount) {
+            if (!amount || amount === 0) return '0';
+            return Number(amount).toLocaleString();
+        }
+
+        // Get loan ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const loanId = urlParams.get('loanId');
+
+        if (!loanId) {
+            document.getElementById('repaymentsBody').innerHTML = 
+                '<tr><td colspan="6" class="text-center text-danger">No loan ID provided</td></tr>';
+        } else {
+            loadLoanStatement(loanId);
+        }
+
+        async function loadLoanStatement(loanId) {
+            try {
+                // Load loan details
+                const loanRes = await fetch(`${API_BASE}/loans/${loanId}`, {
+                    headers: getHeaders()
+                });
+                
+                if (!loanRes.ok) {
+                    throw new Error('Failed to load loan details');
+                }
+                
+                const loan = await loanRes.json();
+                
+                // Load repayments
+                const repayRes = await fetch(`${API_BASE}/repayments/history/${loanId}`, {
+                    headers: getHeaders()
+                });
+                
+                if (!repayRes.ok) {
+                    throw new Error('Failed to load repayments');
+                }
+                
+                const repayments = await repayRes.json();
+
+                // Load summary
+                const summaryRes = await fetch(`${API_BASE}/repayments/summary/${loanId}`, {
+                    headers: getHeaders()
+                });
+                
+                const summary = summaryRes.ok ? await summaryRes.json() : {};
+
+                // Display loan details
+                document.getElementById('loanId').textContent = loan._id;
+                document.getElementById('customerName').textContent = loan.customer?.fullName || 'N/A';
+                document.getElementById('loanAmount').textContent = 'MWK ' + formatMoney(loan.loanAmount);
+                document.getElementById('interestRate').textContent = loan.interestRate + '%';
+                document.getElementById('tenure').textContent = loan.tenureMonths + ' months';
+                document.getElementById('emiAmount').textContent = 'MWK ' + formatMoney(loan.emiAmount);
+                document.getElementById('disbursedDate').textContent = loan.disbursementDate ? 
+                    new Date(loan.disbursementDate).toLocaleDateString() : 
+                    'Not disbursed yet';
+                
+                // Status badge
+                const statusMap = {
+                    'PENDING': '<span class="badge-status-pending">PENDING</span>',
+                    'APPROVED': '<span class="badge-status-approved">APPROVED</span>',
+                    'ACTIVE': '<span class="badge-status-active">ACTIVE</span>',
+                    'CLOSED': '<span class="badge-status-closed">CLOSED</span>',
+                    'REJECTED': '<span class="badge-status-rejected">REJECTED</span>'
+                };
+                const statusBadge = {
+                    'PENDING': 'badge-pending',
+                    'APPROVED': 'badge-approved',
+                    'ACTIVE': 'badge-active',
+                    'CLOSED': 'badge-closed',
+                    'REJECTED': 'badge-rejected'
+                };
+                document.getElementById('loanStatus').innerHTML = `<span class="${statusBadge[loan.status] || 'badge-pending'}">${loan.status}</span>`;
+
+                // Display summary
+                document.getElementById('totalPaid').textContent = 'MWK ' + formatMoney(summary.amountPaid || 0);
+                document.getElementById('remainingBalance').textContent = 'MWK ' + formatMoney(summary.remainingBalance || 0);
+                document.getElementById('progressPercent').textContent = (summary.progressPercent || 0).toFixed(1) + '%';
+                document.getElementById('installmentsPaid').textContent = 
+                    `${summary.paidInstallments || 0}/${summary.totalInstallments || 0}`;
+
+                // Display repayments
+                const tbody = document.getElementById('repaymentsBody');
+                if (!repayments || repayments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No repayment schedule found</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                repayments.forEach(r => {
+                    const statusClass = r.status === 'PAID' ? 'status-paid' : 
+                                       r.status === 'OVERDUE' ? 'status-overdue' : 
+                                       'status-pending';
+                    html += `<tr>
+                        <td>${r.installmentNumber}</td>
+                        <td>${new Date(r.dueDate).toLocaleDateString()}</td>
+                        <td>MWK ${formatMoney(r.amountDue)}</td>
+                        <td>${r.paidDate ? new Date(r.paidDate).toLocaleDateString() : '-'}</td>
+                        <td>${r.amountPaid ? 'MWK ' + formatMoney(r.amountPaid) : '-'}</td>
+                        <td><span class="${statusClass}">${r.status}</span></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading loan statement:', error);
+                document.getElementById('repaymentsBody').innerHTML = 
+                    '<tr><td colspan="6" class="text-center text-danger">Error loading data: ' + error.message + '</td></tr>';
+            }
+        }
+    </script>
+
+    <style>
+        .badge-status-approved { background: #28a745; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-status-pending { background: #ffc107; color: #7a6200; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-status-active { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-status-closed { background: #6c757d; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-status-rejected { background: #dc3545; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-approved { background: #28a745; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-pending { background: #ffc107; color: #7a6200; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-active { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-closed { background: #6c757d; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .badge-rejected { background: #dc3545; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+    </style>
+</body>
+</html>

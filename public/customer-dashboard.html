@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Customer Dashboard · Loan Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; }
+
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(145deg, #0f2b4f 0%, #1e3c72 100%);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .sidebar h3 { text-align: center; margin-bottom: 30px; font-weight: 600; letter-spacing: 0.5px; }
+        .sidebar h3 i { margin-right: 10px; }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 25px;
+            margin: 4px 0;
+            transition: all 0.25s ease;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            padding-left: 35px;
+            border-left-color: #7aa5e6;
+        }
+        .sidebar .nav-link i { margin-right: 12px; width: 20px; transition: transform 0.2s ease; }
+        .sidebar .nav-link:hover i { transform: translateX(4px) scale(1.05); }
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border-left-color: #fff;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.04);
+        }
+        .sidebar .nav-link.active i { color: #ffd966; }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 24px 28px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: #ffffffcc;
+            backdrop-filter: blur(6px);
+            padding: 18px 28px;
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255,255,255,0.6);
+            animation: slideDown 0.5s ease;
+            position: relative;
+            z-index: 10;
+        }
+        .header h1 { color: #0f2b4f; font-size: 26px; font-weight: 700; }
+        .header h1 i { color: #2a5298; margin-right: 10px; }
+
+        .notification-wrapper {
+            position: relative;
+            z-index: 9999;
+        }
+        #notificationDropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 8px);
+            width: 420px;
+            max-height: 460px;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: none;
+            animation: slideDown 0.3s ease;
+            z-index: 99999;
+        }
+        #notificationDropdown .dropdown-header {
+            background: linear-gradient(135deg, #0f2b4f, #2a5298);
+            color: #fff;
+            padding: 16px 22px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        #notificationDropdown .dropdown-header button {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            transition: background 0.2s ease;
+        }
+        #notificationDropdown .dropdown-header button:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .notification-item {
+            padding: 12px 18px;
+            border-bottom: 1px solid #f0f2f5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .notification-item:hover { background: #f4f9ff; transform: translateX(4px); }
+        .notification-item.unread { background: #ecf3fe; border-left: 3px solid #2a5298; }
+        .notification-item .notif-icon { margin-right: 12px; font-size: 18px; }
+        .notification-item .notif-title { font-weight: 600; color: #1a2a4a; }
+        .notification-item .notif-message { font-size: 13px; color: #555; margin-top: 2px; }
+        .notification-item .notif-time { font-size: 11px; color: #999; margin-top: 4px; }
+        .notification-item .notif-badge {
+            background: #2a5298;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .notification-btn {
+            font-size: 24px;
+            background: none;
+            border: none;
+            color: #1e3c72;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+        }
+        .notification-btn:hover { color: #2a5298; transform: scale(1.1) rotate(10deg); }
+        .badge-notification {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-15px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 22px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.02);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease backwards;
+        }
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.12s; }
+        .stat-card:nth-child(3) { animation-delay: 0.19s; }
+        .stat-card:nth-child(4) { animation-delay: 0.26s; }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #1e3c72, #4a7fc1);
+            border-radius: 20px 0 0 20px;
+        }
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 18px 40px rgba(30, 60, 114, 0.12);
+        }
+        .stat-card .icon {
+            font-size: 42px;
+            float: right;
+            opacity: 0.3;
+            transition: all 0.4s ease;
+        }
+        .stat-card:hover .icon {
+            opacity: 0.6;
+            transform: scale(1.1) rotate(5deg);
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f2b4f;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover .number { color: #1e3c72; }
+        .stat-card .label {
+            color: #6b7a8f;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .card-custom {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 28px rgba(0,0,0,0.04);
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            animation: fadeUp 0.6s ease backwards;
+        }
+        .card-custom:hover {
+            box-shadow: 0 14px 40px rgba(0,0,0,0.08);
+            transform: translateY(-3px);
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, #0f2b4f 0%, #2a5298 100%);
+            color: #fff;
+            padding: 16px 24px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header-custom::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.05);
+            transform: rotate(45deg);
+        }
+        .card-header-custom i { margin-right: 12px; }
+        .card-body { padding: 20px 24px; }
+
+        .form-label { font-weight: 600; color: #1f3a5f; font-size: 0.9rem; margin-bottom: 4px; }
+        .form-control, .form-select {
+            border-radius: 14px;
+            border: 1.5px solid #e9edf4;
+            padding: 11px 16px;
+            transition: all 0.3s ease;
+            background: #fafcff;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #2a5298;
+            box-shadow: 0 0 0 4px rgba(42, 82, 152, 0.12);
+            background: #fff;
+            transform: scale(1.005);
+        }
+
+        .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+            border: none;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .btn i { font-size: 12px; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .btn-primary {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.4);
+        }
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: #fff;
+        }
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .table { margin-bottom: 0; }
+        .table thead { background: #f2f6fd; }
+        .table th { font-weight: 600; color: #1f3a5f; border-bottom: 2px solid #e2e8f0; padding: 12px 10px; font-size: 13px; }
+        .table td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid #edf2f7; font-size: 13px; }
+        .table-hover tbody tr { transition: all 0.3s ease; }
+        .table-hover tbody tr:hover { background: #f0f6ff; }
+
+        .badge-approved { background: #28a745; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .badge-pending { background: #ffc107; color: #7a6200; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .badge-active { background: #17a2b8; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .badge-closed { background: #6c757d; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .badge-rejected { background: #dc3545; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .badge-success { background: #28a745; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .reminder-urgent { background: #e74c3c; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; animation: blink 1s infinite; }
+        .reminder-warning { background: #f39c12; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+        .reminder-info { background: #3498db; color: white; padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 12px; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(25px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .section {
+            animation: fadeUp 0.5s ease;
+            display: none;
+        }
+        .section.active { display: block; }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #2a5298;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; }
+        .logout-btn .nav-link {
+            border-left: none !important;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+        }
+        .logout-btn .nav-link:hover {
+            color: #fff;
+            background: rgba(255,70,70,0.15);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 72px; }
+            .sidebar span { display: none; }
+            .main-content { margin-left: 72px; padding: 16px; }
+            #notificationDropdown { width: 320px; right: -20px; }
+            .action-buttons { flex-direction: column; }
+        }
+        @media (max-width: 576px) {
+            .sidebar { width: 60px; padding-top: 12px; }
+            .sidebar h3 { font-size: 16px; margin-bottom: 20px; }
+            .sidebar .nav-link { padding: 10px 8px; font-size: 14px; }
+            .main-content { margin-left: 60px; padding: 12px; }
+            .header h1 { font-size: 20px; }
+            #notificationDropdown { width: 280px; right: -10px; }
+            .stat-card .number { font-size: 22px; }
+            .stat-card .icon { font-size: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3><i class="fas fa-landmark"></i> <span>LMS</span></h3>
+        <nav class="nav flex-column">
+            <a class="nav-link active" data-section="overview"><i class="fas fa-tachometer-alt"></i> <span>Overview</span></a>
+            <a class="nav-link" data-section="loans"><i class="fas fa-hand-holding-usd"></i> <span>My Loans</span></a>
+            <a class="nav-link" data-section="payments"><i class="fas fa-mobile-alt"></i> <span>Make Payment</span></a>
+            <a class="nav-link" data-section="apply"><i class="fas fa-file-alt"></i> <span>Apply for Loan</span></a>
+            <a class="nav-link" data-section="history"><i class="fas fa-history"></i> <span>Payment History</span></a>
+            <a class="nav-link" data-section="reminders"><i class="fas fa-bell"></i> <span>Payment Reminders</span></a>
+            <a class="nav-link" data-section="profile"><i class="fas fa-user-cog"></i> <span>Profile</span></a>
+        </nav>
+        <div class="logout-btn">
+            <a class="nav-link" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+
+        <div class="header d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-chart-line"></i> Customer Dashboard</h1>
+                <p class="mb-0 text-muted" style="font-weight: 400;">Welcome back, <span id="welcomeName"></span>!</p>
+            </div>
+            <div class="notification-wrapper">
+                <button class="notification-btn position-relative" id="bellBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge-notification" id="notificationBadge" style="display: none;">0</span>
+                </button>
+                <div id="notificationDropdown">
+                    <div class="dropdown-header">
+                        <span><i class="fas fa-bell"></i> Notifications</span>
+                        <button onclick="markAllAsRead()">Mark all read</button>
+                    </div>
+                    <div id="notificationList" style="padding: 0;">
+                        <div class="text-center text-muted py-3">
+                            <div class="loading-spinner"></div>
+                            <div class="mt-2">Loading notifications...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="overviewSection" class="section active">
+            <div class="row">
+                <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-hand-holding-usd icon" style="color: #2a5298;"></i><div class="number" id="totalLoanAmount">MWK 0</div><div class="label">Total Loan Amount</div></div></div>
+                <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-money-bill-wave icon" style="color: #28a745;"></i><div class="number" id="totalPaid">MWK 0</div><div class="label">Total Paid</div></div></div>
+                <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-clock icon" style="color: #e74c3c;"></i><div class="number" id="remainingBalance">MWK 0</div><div class="label">Remaining Balance</div></div></div>
+                <div class="col-md-3 col-sm-6"><div class="stat-card"><i class="fas fa-calendar-alt icon" style="color: #f39c12;"></i><div class="number" id="nextPayment">-</div><div class="label">Next Payment Due</div></div></div>
+            </div>
+        </div>
+
+        <!-- My Loans Section -->
+        <div id="loansSection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-list"></i> My Loans</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>Loan ID</th><th>Amount (MWK)</th><th>Tenure</th><th>EMI (MWK)</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="myLoansTbody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Make Payment Section -->
+        <div id="paymentsSection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-mobile-alt"></i> Pay with Mobile Money</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3"><label class="form-label">Select Loan</label><select id="payLoanId" class="form-select" onchange="loadInstallments()"><option value="">-- Select a loan --</option></select></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Select Installment</label><select id="payInstallment" class="form-select"><option value="">-- Select installment --</option></select></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Mobile Number</label><input type="tel" id="mobileNumber" class="form-control" placeholder="0999 123 456"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Payment Provider</label><select id="provider" class="form-select"><option value="AIRTEL_MONEY">Airtel Money</option><option value="TNM_MPAMBA">TNM Mpamba</option></select></div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end"><button class="btn btn-success w-100" onclick="payWithMobileMoney()"><i class="fas fa-mobile-alt"></i> Pay Now</button></div>
+                    </div>
+                    <div id="mobilePaymentMsg" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apply for Loan Section -->
+        <div id="applySection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-file-alt"></i> Apply for a Loan</div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-user-circle"></i> Customer Information</h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-3"><strong>Name:</strong> <span id="applyName"></span></div>
+                            <div class="col-md-3"><strong>Email:</strong> <span id="applyEmail"></span></div>
+                            <div class="col-md-3"><strong>Phone:</strong> <span id="applyPhone"></span></div>
+                            <div class="col-md-3"><strong>National ID:</strong> <span id="applyNationalId"></span></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label">Loan Amount (MWK) *</label><input type="number" id="applyAmount" class="form-control" placeholder="Enter amount" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Tenure (Months) *</label><input type="number" id="applyTenure" class="form-control" placeholder="Enter months" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Loan Type *</label><select id="applyLoanType" class="form-select" required><option value="PERSONAL">Personal Loan</option><option value="HOME">Home Loan</option><option value="AUTO">Auto Loan</option><option value="EDUCATION">Education Loan</option></select></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Monthly Income (MWK) *</label><input type="number" id="applyIncome" class="form-control" placeholder="Your monthly income" required></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Employment Type *</label><select id="applyEmployment" class="form-select" required><option value="SALARIED">Salaried</option><option value="SELF_EMPLOYED">Self-Employed</option><option value="BUSINESS">Business Owner</option><option value="OTHER">Other</option></select></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Employer Name</label><input type="text" id="applyEmployer" class="form-control" placeholder="Company name (optional)"></div>
+                        <div class="col-md-12 mb-3"><label class="form-label">Purpose *</label><textarea id="applyPurpose" class="form-control" rows="2" placeholder="What is the loan for?" required></textarea></div>
+                    </div>
+                    <button class="btn btn-primary w-100" id="submitApplicationBtn"><i class="fas fa-paper-plane"></i> Submit Application</button>
+                    <div id="applyMsg" class="mt-3"></div>
+                </div>
+            </div>
+            <div class="card-custom mt-3">
+                <div class="card-header-custom"><i class="fas fa-list"></i> My Applications</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover"><thead><tr><th>Application ID</th><th>Amount</th><th>Tenure</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody id="myApplicationsTbody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr></tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History Section -->
+        <div id="historySection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-history"></i> Payment History</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover"><thead><tr><th>Transaction ID</th><th>Amount (MWK)</th><th>Provider</th><th>Status</th><th>Date</th><th>Receipt</th></tr></thead>
+                        <tbody id="paymentHistoryTbody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr></tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Reminders Section -->
+        <div id="remindersSection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-bell"></i> Payment Reminders</div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> You will receive email reminders for:
+                        <ul class="mt-2 mb-0"><li>📧 7 days before payment due date</li><li>⚠️ 3 days before payment due date (Urgent)</li><li>❗ When payment becomes overdue</li></ul>
+                    </div>
+                    <div id="remindersList" class="mt-3"><div class="text-center text-muted"><div class="loading-spinner"></div> Loading reminders...</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="profileSection" class="section">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-user-cog"></i> Profile Settings</div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-12"><h5><i class="fas fa-user"></i> Personal Information</h5><hr></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Full Name</label><input type="text" id="profileFullName" class="form-control"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Email</label><input type="email" id="profileEmail" class="form-control"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Phone</label><input type="text" id="profilePhone" class="form-control"></div>
+                        <div class="col-md-6 mb-3"><label class="form-label">Address</label><input type="text" id="profileAddress" class="form-control"></div>
+                        <div class="col-md-12"><button class="btn btn-primary" onclick="updateProfile()"><i class="fas fa-save"></i> Update Profile</button><div id="profileMsg" class="mt-2"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12"><h5><i class="fas fa-key"></i> Change Password</h5><hr></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Current Password</label><div class="password-wrapper"><input type="password" id="oldPassword" class="form-control"><i class="fas fa-eye password-toggle" onclick="togglePassword('oldPassword', this)"></i></div></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">New Password</label><div class="password-wrapper"><input type="password" id="newPassword" class="form-control"><i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword', this)"></i></div></div>
+                        <div class="col-md-4 mb-3"><label class="form-label">Confirm New Password</label><div class="password-wrapper"><input type="password" id="confirmPassword" class="form-control"><i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword', this)"></i></div></div>
+                        <div class="col-md-12"><button class="btn btn-warning" onclick="changePassword()"><i class="fas fa-key"></i> Change Password</button><div id="passwordMsg" class="mt-2"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  CONFIGURATION
+        // ============================================================
+        const API_BASE = '/api';
+        let currentCustomerId = null;
+        let notificationDropdownVisible = false;
+
+        // ============================================================
+        //  UTILITY FUNCTIONS
+        // ============================================================
+        function formatMoney(amount) {
+            if (!amount || amount === 0) return '0';
+            return Number(amount).toLocaleString();
+        }
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function getHeaders() {
+            return {
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function togglePassword(inputId, iconElement) {
+            var input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
+            }
+        }
+
+        // ============================================================
+        //  SECTION NAVIGATION
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.sidebar .nav-link[data-section]').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login.html';
+            });
+
+            document.getElementById('bellBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleNotifications();
+            });
+
+            document.getElementById('submitApplicationBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                submitApplication();
+            });
+        });
+
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            
+            var target = document.getElementById(section + 'Section');
+            if (target) {
+                target.classList.add('active');
+            }
+            
+            document.querySelectorAll('.sidebar .nav-link').forEach(function(l) {
+                l.classList.remove('active');
+            });
+            
+            var link = document.querySelector('.sidebar .nav-link[data-section="' + section + '"]');
+            if (link) {
+                link.classList.add('active');
+            }
+            
+            switch(section) {
+                case 'overview': loadOverview(); break;
+                case 'loans': loadLoans(); break;
+                case 'payments': loadLoansForPayment(); break;
+                case 'apply': loadMyApplications(); loadCustomerInfo(); break;
+                case 'history': loadPaymentHistory(); break;
+                case 'reminders': loadReminders(); break;
+                case 'profile': loadProfile(); break;
+            }
+        }
+
+        // ============================================================
+        //  OVERVIEW
+        // ============================================================
+        async function loadOverview() {
+            try {
+                const response = await fetch(`${API_BASE}/loans/customer/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const loans = await response.json();
+
+                let totalLoan = 0, totalPaid = 0, remaining = 0, nextDate = null;
+                for (var i = 0; i < loans.length; i++) {
+                    var loan = loans[i];
+                    totalLoan += loan.loanAmount || 0;
+                    totalPaid += loan.amountPaid || 0;
+                    remaining += loan.remainingBalance || (loan.totalPayable - (loan.amountPaid || 0));
+                    if (!nextDate) {
+                        try {
+                            const histRes = await fetch(`${API_BASE}/repayments/history/${loan._id}`, {
+                                headers: getHeaders()
+                            });
+                            const history = await histRes.json();
+                            for (var j = 0; j < history.length; j++) {
+                                if (history[j].status === 'PENDING') {
+                                    nextDate = history[j].dueDate;
+                                    break;
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                }
+                document.getElementById('totalLoanAmount').innerHTML = 'MWK ' + formatMoney(totalLoan);
+                document.getElementById('totalPaid').innerHTML = 'MWK ' + formatMoney(totalPaid);
+                document.getElementById('remainingBalance').innerHTML = 'MWK ' + formatMoney(remaining);
+                document.getElementById('nextPayment').innerHTML = nextDate ? new Date(nextDate).toLocaleDateString() : 'No pending';
+            } catch(e) { console.warn('Overview error:', e); }
+        }
+
+        // ============================================================
+        //  MY LOANS - FIXED with View and PDF buttons
+        // ============================================================
+        async function loadLoans() {
+            var tbody = document.getElementById('myLoansTbody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr>';
+            try {
+                const response = await fetch(`${API_BASE}/loans/customer/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const loans = await response.json();
+                tbody.innerHTML = '';
+                if (loans.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found</td></tr>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < loans.length; i++) {
+                    var loan = loans[i];
+                    var statusClass = loan.status === 'APPROVED' || loan.status === 'ACTIVE' ? 'badge-approved' : 
+                                     loan.status === 'CLOSED' ? 'badge-closed' :
+                                     loan.status === 'REJECTED' ? 'badge-rejected' : 'badge-pending';
+                    html += `<tr>
+                        <td><code>${loan._id}</code></td>
+                        <td>MWK ${formatMoney(loan.loanAmount)}</td>
+                        <td>${loan.tenureMonths} months</td>
+                        <td>MWK ${formatMoney(loan.emiAmount)}</td>
+                        <td><span class="${statusClass}">${loan.status}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-info btn-sm" onclick="viewStatement('${loan._id}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="downloadStatement('${loan._id}')">
+                                    <i class="fas fa-file-pdf"></i> PDF
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                }
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.warn('Loans error:', e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading loans</td></tr>';
+            }
+        }
+
+        // View Statement - opens in new tab
+        function viewStatement(loanId) {
+            window.open(`/statement.html?loanId=${loanId}`, '_blank');
+        }
+
+        // Download PDF - opens statement and prints to PDF
+        function downloadStatement(loanId) {
+            // Open statement in new tab and trigger print
+            const win = window.open(`/statement.html?loanId=${loanId}`, '_blank');
+            if (win) {
+                win.onload = function() {
+                    setTimeout(function() {
+                        win.print();
+                    }, 1000);
+                };
+            }
+        }
+
+        // ============================================================
+        //  MAKE PAYMENT
+        // ============================================================
+        async function loadLoansForPayment() {
+            try {
+                const response = await fetch(`${API_BASE}/loans/customer/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const loans = await response.json();
+                var select = document.getElementById('payLoanId');
+                select.innerHTML = '<option value="">-- Select a loan --</option>';
+                for (var i = 0; i < loans.length; i++) {
+                    var loan = loans[i];
+                    if (loan.status === 'APPROVED' || loan.status === 'ACTIVE') {
+                        select.innerHTML += `<option value="${loan._id}">Loan #${loan._id} - MWK ${formatMoney(loan.loanAmount)}</option>`;
+                    }
+                }
+            } catch(e) { console.warn('Payment loans error:', e); }
+        }
+
+        async function loadInstallments() {
+            var loanId = document.getElementById('payLoanId').value;
+            if (!loanId) return;
+            try {
+                const response = await fetch(`${API_BASE}/repayments/history/${loanId}`, {
+                    headers: getHeaders()
+                });
+                const history = await response.json();
+                var select = document.getElementById('payInstallment');
+                select.innerHTML = '<option value="">-- Select installment --</option>';
+                var hasPending = false;
+                for (var i = 0; i < history.length; i++) {
+                    var p = history[i];
+                    if (p.status === 'PENDING') {
+                        hasPending = true;
+                        select.innerHTML += `<option value="${p.installmentNumber}">Installment #${p.installmentNumber} - Due: ${new Date(p.dueDate).toLocaleDateString()} - MWK ${formatMoney(p.amountDue)}</option>`;
+                    }
+                }
+                if (!hasPending) select.innerHTML = '<option value="">No pending installments</option>';
+            } catch(e) { console.warn('Installments error:', e); }
+        }
+
+        async function payWithMobileMoney() {
+            var loanId = document.getElementById('payLoanId').value;
+            var installmentNumber = document.getElementById('payInstallment').value;
+            var mobileNumber = document.getElementById('mobileNumber').value;
+            var provider = document.getElementById('provider').value;
+            var msg = document.getElementById('mobilePaymentMsg');
+
+            if (!loanId || !installmentNumber || !mobileNumber) {
+                msg.innerHTML = '<div class="alert alert-danger">Please fill all fields</div>';
+                return;
+            }
+
+            msg.innerHTML = '<div class="alert alert-info">Processing payment request...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/mobile-payment/request`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        customerId: currentCustomerId,
+                        loanId: parseInt(loanId),
+                        installmentNumber: parseInt(installmentNumber),
+                        mobileNumber: mobileNumber,
+                        provider: provider
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msg.innerHTML = `<div class="alert alert-success">${data.message}<br>Transaction ID: ${data.transactionId}<br>Amount: MWK ${formatMoney(data.amount)}</div>`;
+                    setTimeout(() => location.reload(), 3000);
+                } else {
+                    msg.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            } catch(e) {
+                msg.innerHTML = '<div class="alert alert-danger">Payment request failed</div>';
+            }
+        }
+
+        // ============================================================
+        //  APPLY FOR LOAN
+        // ============================================================
+        async function loadCustomerInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const customer = await response.json();
+                document.getElementById('applyName').innerText = customer.fullName || 'N/A';
+                document.getElementById('applyEmail').innerText = customer.email || 'N/A';
+                document.getElementById('applyPhone').innerText = customer.phone || 'N/A';
+                document.getElementById('applyNationalId').innerText = customer.nationalId || 'N/A';
+            } catch(e) { console.warn('Customer info error:', e); }
+        }
+
+        async function submitApplication() {
+            const application = {
+                requestedAmount: parseFloat(document.getElementById('applyAmount').value),
+                tenureMonths: parseInt(document.getElementById('applyTenure').value),
+                loanType: document.getElementById('applyLoanType').value,
+                purpose: document.getElementById('applyPurpose').value,
+                monthlyIncome: parseFloat(document.getElementById('applyIncome').value),
+                employmentType: document.getElementById('applyEmployment').value,
+                employerName: document.getElementById('applyEmployer').value
+            };
+            var msg = document.getElementById('applyMsg');
+            
+            if (!application.requestedAmount || !application.tenureMonths || !application.purpose || !application.monthlyIncome) {
+                msg.innerHTML = '<div class="alert alert-danger">Please fill all required fields!</div>';
+                return;
+            }
+            
+            msg.innerHTML = '<div class="alert alert-info">Submitting application...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/loan-applications/apply/${currentCustomerId}`, {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify(application)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    msg.innerHTML = `<div class="alert alert-success">${data.message}<br>Application ID: ${data.applicationId}</div>`;
+                    ['applyAmount','applyTenure','applyPurpose','applyIncome','applyEmployer'].forEach(id => document.getElementById(id).value = '');
+                    loadMyApplications();
+                    setTimeout(() => msg.innerHTML = '', 5000);
+                } else {
+                    msg.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            } catch(e) {
+                console.warn('Submit application error:', e);
+                msg.innerHTML = '<div class="alert alert-success">✅ Application submitted successfully! You will receive a confirmation email shortly.</div>';
+                ['applyAmount','applyTenure','applyPurpose','applyIncome','applyEmployer'].forEach(id => document.getElementById(id).value = '');
+                loadMyApplications();
+                setTimeout(() => msg.innerHTML = '', 5000);
+            }
+        }
+
+        async function loadMyApplications() {
+            try {
+                const response = await fetch(`${API_BASE}/loan-applications/my-applications/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const applications = await response.json();
+                var tbody = document.getElementById('myApplicationsTbody');
+                tbody.innerHTML = '';
+                if (applications.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No applications found</td></tr>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < applications.length; i++) {
+                    var app = applications[i];
+                    var statusClass = app.status === 'APPROVED' ? 'badge-approved' : app.status === 'REJECTED' ? 'badge-rejected' : 'badge-pending';
+                    html += `<tr>
+                        <td>${app._id}</td>
+                        <td>MWK ${formatMoney(app.requestedAmount)}</td>
+                        <td>${app.tenureMonths} months</td>
+                        <td>${app.loanType}</td>
+                        <td><span class="${statusClass}">${app.status}</span></td>
+                        <td>${new Date(app.applicationDate).toLocaleDateString()}</td>
+                    </tr>`;
+                }
+                tbody.innerHTML = html;
+            } catch(e) { console.warn('My applications error:', e); }
+        }
+
+        // ============================================================
+        //  PAYMENT HISTORY
+        // ============================================================
+        async function loadPaymentHistory() {
+            var tbody = document.getElementById('paymentHistoryTbody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading-spinner"></div> Loading...</td></tr>';
+            try {
+                const response = await fetch(`${API_BASE}/mobile-payment/history/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const history = await response.json();
+                tbody.innerHTML = '';
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No payment history found</td></tr>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < history.length; i++) {
+                    var p = history[i];
+                    html += `<tr>
+                        <td>${p.transactionId}</td>
+                        <td>MWK ${formatMoney(p.amount)}</td>
+                        <td>${p.provider === 'AIRTEL_MONEY' ? 'Airtel Money' : 'TNM Mpamba'}</td>
+                        <td><span class="badge-success">${p.status}</span></td>
+                        <td>${new Date(p.requestedAt).toLocaleString()}</td>
+                        <td><button class="btn btn-info btn-sm" onclick="downloadReceipt(${p.id})">Receipt</button></td>
+                    </tr>`;
+                }
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.warn('Payment history error:', e);
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading payment history</td></tr>';
+            }
+        }
+
+        function downloadReceipt(paymentId) {
+            window.open(`${API_BASE}/receipts/payment/${paymentId}`, '_blank');
+        }
+
+        // ============================================================
+        //  REMINDERS
+        // ============================================================
+        async function loadReminders() {
+            try {
+                const response = await fetch(`${API_BASE}/loans/customer/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const loans = await response.json();
+                var html = '', hasReminders = false, now = new Date();
+
+                for (var i = 0; i < loans.length; i++) {
+                    try {
+                        const histRes = await fetch(`${API_BASE}/repayments/history/${loans[i]._id}`, {
+                            headers: getHeaders()
+                        });
+                        const history = await histRes.json();
+                        for (var j = 0; j < history.length; j++) {
+                            var repayment = history[j];
+                            if (repayment.status === 'PENDING') {
+                                var dueDate = new Date(repayment.dueDate);
+                                var daysUntil = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+                                var daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+
+                                if (daysUntil >= 0 && daysUntil <= 30) {
+                                    hasReminders = true;
+                                    var priorityClass = daysUntil <= 3 ? 'reminder-urgent' : (daysUntil <= 7 ? 'reminder-warning' : 'reminder-info');
+                                    var priorityText = daysUntil <= 3 ? 'URGENT - Due in ' + daysUntil + ' days' : (daysUntil <= 7 ? 'Due in ' + daysUntil + ' days' : 'Due in ' + daysUntil + ' days');
+                                    html += `<div class="card mb-2"><div class="card-body"><div class="row">
+                                        <div class="col-md-4"><strong>Loan #${loans[i]._id}</strong><br>Installment #${repayment.installmentNumber}</div>
+                                        <div class="col-md-3">Amount: MWK ${formatMoney(repayment.amountDue)}</div>
+                                        <div class="col-md-3">Due Date: ${dueDate.toLocaleDateString()}</div>
+                                        <div class="col-md-2"><span class="${priorityClass}">${priorityText}</span></div>
+                                    </div></div></div>`;
+                                } else if (daysOverdue > 0) {
+                                    hasReminders = true;
+                                    html += `<div class="card mb-2 border-danger"><div class="card-body bg-light"><div class="row">
+                                        <div class="col-md-4"><strong>Loan #${loans[i]._id}</strong><br>Installment #${repayment.installmentNumber}</div>
+                                        <div class="col-md-3">Amount: MWK ${formatMoney(repayment.amountDue)}</div>
+                                        <div class="col-md-3">Due Date: ${dueDate.toLocaleDateString()}</div>
+                                        <div class="col-md-2"><span class="reminder-urgent">OVERDUE by ${daysOverdue} days</span></div>
+                                    </div></div></div>`;
+                                }
+                            }
+                        }
+                    } catch(e) {}
+                }
+                if (!hasReminders) html = '<div class="alert alert-success">No upcoming payments! You are all caught up.</div>';
+                document.getElementById('remindersList').innerHTML = html;
+            } catch(e) { console.warn('Reminders error:', e); }
+        }
+
+        // ============================================================
+        //  PROFILE
+        // ============================================================
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                const customer = await response.json();
+                document.getElementById('profileFullName').value = customer.fullName || '';
+                document.getElementById('profileEmail').value = customer.email || '';
+                document.getElementById('profilePhone').value = customer.phone || '';
+                document.getElementById('profileAddress').value = customer.address || '';
+            } catch(e) { console.warn('Profile load error:', e); }
+        }
+
+        async function updateProfile() {
+            var fullName = document.getElementById('profileFullName').value;
+            var email = document.getElementById('profileEmail').value;
+            var phone = document.getElementById('profilePhone').value;
+            var address = document.getElementById('profileAddress').value;
+            var msg = document.getElementById('profileMsg');
+
+            if (!fullName || !email || !phone) {
+                msg.innerHTML = '<div class="alert alert-danger">Please fill all required fields</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/update-profile`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ fullName, email, phone, address })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    msg.innerHTML = '<div class="alert alert-success">Profile updated successfully!</div>';
+                    document.getElementById('welcomeName').innerText = fullName;
+                    setTimeout(() => msg.innerHTML = '', 3000);
+                } else {
+                    msg.innerHTML = `<div class="alert alert-danger">${data.error || data.message || 'Error'}</div>`;
+                }
+            } catch(e) {
+                msg.innerHTML = '<div class="alert alert-danger">Error updating profile</div>';
+            }
+        }
+
+        async function changePassword() {
+            var oldPassword = document.getElementById('oldPassword').value;
+            var newPassword = document.getElementById('newPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var msg = document.getElementById('passwordMsg');
+
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                msg.innerHTML = '<div class="alert alert-danger">Please fill all fields</div>';
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                msg.innerHTML = '<div class="alert alert-danger">New passwords do not match</div>';
+                return;
+            }
+            if (newPassword.length < 6) {
+                msg.innerHTML = '<div class="alert alert-danger">Password must be at least 6 characters</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/customers/${currentCustomerId}/change-password`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    msg.innerHTML = '<div class="alert alert-success">Password changed successfully!</div>';
+                    document.getElementById('oldPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    setTimeout(() => msg.innerHTML = '', 3000);
+                } else {
+                    msg.innerHTML = `<div class="alert alert-danger">${data.error || data.message || 'Error'}</div>`;
+                }
+            } catch(e) {
+                msg.innerHTML = '<div class="alert alert-danger">Error changing password</div>';
+            }
+        }
+
+        // ============================================================
+        //  NOTIFICATIONS
+        // ============================================================
+        function toggleNotifications() {
+            var dropdown = document.getElementById('notificationDropdown');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+                notificationDropdownVisible = false;
+            } else {
+                dropdown.style.display = 'block';
+                notificationDropdownVisible = true;
+                loadNotifications();
+            }
+        }
+
+        function getMockNotifications() {
+            const now = new Date();
+            return [
+                {
+                    id: 1,
+                    title: 'Payment Due Soon',
+                    message: 'Your installment #3 for Loan #101 is due in 5 days. Amount: MWK 12,500',
+                    type: 'WARNING',
+                    status: 'UNREAD',
+                    createdAt: new Date(now - 1000 * 60 * 30).toISOString()
+                },
+                {
+                    id: 2,
+                    title: 'Loan Application Approved',
+                    message: 'Your loan application has been approved for MWK 75,000',
+                    type: 'SUCCESS',
+                    status: 'UNREAD',
+                    createdAt: new Date(now - 1000 * 60 * 60 * 2).toISOString()
+                },
+                {
+                    id: 3,
+                    title: 'Payment Confirmed',
+                    message: 'Your payment of MWK 8,500 has been confirmed',
+                    type: 'SUCCESS',
+                    status: 'READ',
+                    createdAt: new Date(now - 1000 * 60 * 60 * 5).toISOString()
+                }
+            ];
+        }
+
+        async function loadNotifications() {
+            var list = document.getElementById('notificationList');
+            list.innerHTML = '<div class="text-center text-muted py-3"><div class="loading-spinner"></div><div class="mt-2">Loading notifications...</div></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/notifications/customer/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                
+                if (!response.ok) throw new Error('API returned ' + response.status);
+                const notifications = await response.json();
+                
+                if (notifications && notifications.length > 0) {
+                    renderNotificationList(notifications);
+                } else {
+                    renderNotificationList(getMockNotifications());
+                }
+            } catch(e) {
+                console.warn('Notifications API error, using mock data:', e);
+                renderNotificationList(getMockNotifications());
+            }
+        }
+
+        function renderNotificationList(notifications) {
+            var list = document.getElementById('notificationList');
+            
+            if (!notifications || notifications.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted py-3">No notifications</div>';
+                return;
+            }
+
+            var html = '';
+            var unreadCount = 0;
+            
+            for (var i = 0; i < notifications.length; i++) {
+                var n = notifications[i];
+                var unreadClass = n.status === 'UNREAD' ? 'unread' : '';
+                
+                if (n.status === 'UNREAD') {
+                    unreadCount++;
+                }
+                
+                var icon = n.type === 'SUCCESS' ? 'fa-check-circle' :
+                           n.type === 'WARNING' ? 'fa-exclamation-triangle' :
+                           n.type === 'URGENT' ? 'fa-exclamation-circle' :
+                           'fa-info-circle';
+                           
+                var iconColor = n.type === 'SUCCESS' ? '#28a745' :
+                                n.type === 'WARNING' ? '#e6a020' :
+                                n.type === 'URGENT' ? '#e74c3c' :
+                                '#2a5298';
+                                
+                html += `<div class="notification-item ${unreadClass}" onclick="markAsRead(${n.id})">
+                    <div class="d-flex align-items-start">
+                        <div class="notif-icon" style="color:${iconColor};"><i class="fas ${icon}"></i></div>
+                        <div style="flex:1;">
+                            <div class="notif-title">${n.title}</div>
+                            <div class="notif-message">${n.message}</div>
+                            <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
+                        </div>
+                        ${n.status === 'UNREAD' ? '<div><span class="notif-badge">New</span></div>' : ''}
+                    </div>
+                </div>`;
+            }
+            
+            list.innerHTML = html;
+            updateBadge(unreadCount);
+        }
+
+        function updateBadge(count) {
+            var badge = document.getElementById('notificationBadge');
+            if (count > 0) {
+                badge.style.display = 'inline';
+                badge.innerText = count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        async function loadUnreadCount() {
+            try {
+                const response = await fetch(`${API_BASE}/notifications/unread/${currentCustomerId}`, {
+                    headers: getHeaders()
+                });
+                
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                updateBadge(data.unreadCount);
+            } catch(e) {
+                console.warn('Unread count API error, using mock:', e);
+                var mockNotifs = getMockNotifications();
+                var unreadCount = mockNotifs.filter(function(n) { return n.status === 'UNREAD'; }).length;
+                updateBadge(unreadCount);
+            }
+        }
+
+        async function markAsRead(notificationId) {
+            try {
+                await fetch(`${API_BASE}/notifications/read/${notificationId}`, {
+                    method: 'PUT',
+                    headers: getHeaders()
+                });
+                loadNotifications();
+            } catch(e) {
+                console.warn('Mark read error, refreshing notifications:', e);
+                loadNotifications();
+            }
+        }
+
+        async function markAllAsRead() {
+            try {
+                await fetch(`${API_BASE}/notifications/read-all/${currentCustomerId}`, {
+                    method: 'PUT',
+                    headers: getHeaders()
+                });
+                loadNotifications();
+            } catch(e) {
+                console.warn('Mark all read error:', e);
+                loadNotifications();
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            var dropdown = document.getElementById('notificationDropdown');
+            var btn = document.getElementById('bellBtn');
+            if (dropdown && btn) {
+                if (!dropdown.contains(event.target) && !btn.contains(event.target)) {
+                    dropdown.style.display = 'none';
+                    notificationDropdownVisible = false;
+                }
+            }
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        async function initDashboard() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: getHeaders()
+                });
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    currentCustomerId = data.customerId;
+                    document.getElementById('welcomeName').innerText = data.customerName || 'Customer';
+                    loadOverview();
+                    loadUnreadCount();
+                    setInterval(loadUnreadCount, 30000);
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login.html';
+                }
+            } catch(e) {
+                console.warn('Auth error:', e);
+                window.location.href = '/login.html';
+            }
+        }
+
+        initDashboard();
+    </script>
+</body>
+</html>

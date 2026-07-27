@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Dashboard · Loan Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .sidebar h3 i {
+            margin-right: 10px;
+        }
+
+        .sidebar .nav-link {
+            color: white;
+            padding: 12px 25px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            padding-left: 35px;
+            border-left-color: #7aa5e6;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.12);
+            border-left-color: #fff;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.04);
+        }
+
+        .sidebar .nav-link.active i {
+            color: #ffd966;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 24px 28px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Header */
+        .header {
+            background: #ffffffcc;
+            backdrop-filter: blur(6px);
+            padding: 18px 28px;
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            animation: floatIn 0.5s ease;
+        }
+
+        .header h1 {
+            color: #0f2b4f;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .header h1 i {
+            color: #2a5298;
+            margin-right: 10px;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 22px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            animation: cardPop 0.5s ease backwards;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.12s; }
+        .stat-card:nth-child(3) { animation-delay: 0.19s; }
+        .stat-card:nth-child(4) { animation-delay: 0.26s; }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, #1e3c72, #4a7fc1);
+            border-radius: 20px 0 0 20px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 18px 40px rgba(30, 60, 114, 0.10);
+        }
+
+        .stat-card .icon {
+            font-size: 42px;
+            float: right;
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .icon {
+            opacity: 0.6;
+            transform: scale(1.08) rotate(2deg);
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f2b4f;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .label {
+            color: #6b7a8f;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* Cards */
+        .card-custom {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            animation: floatIn 0.5s ease backwards;
+        }
+
+        .card-custom:nth-child(2) { animation-delay: 0.1s; }
+
+        .card-custom:hover {
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #0f2b4f 0%, #2a5298 100%);
+            color: #fff;
+            padding: 16px 24px;
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: 0.2px;
+        }
+
+        .card-header-custom i {
+            margin-right: 12px;
+        }
+
+        .card-body {
+            padding: 20px 24px;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        .chart-container.tall {
+            height: 300px;
+        }
+
+        /* Activity Items */
+        .activity-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 14px;
+            transition: background 0.15s ease;
+            border-radius: 8px;
+        }
+
+        .activity-item:hover {
+            background: #f4f9ff;
+        }
+
+        .activity-item i {
+            width: 30px;
+            font-size: 16px;
+        }
+
+        .activity-item .activity-amount {
+            font-weight: 600;
+            color: #0f2b4f;
+        }
+
+        .activity-item .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Animations */
+        @keyframes floatIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes cardPop {
+            0% { opacity: 0; transform: scale(0.94); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Scrollbar */
+        #activitiesList::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #activitiesList::-webkit-scrollbar-thumb {
+            background: #c1c9d6;
+            border-radius: 10px;
+        }
+
+        #activitiesList::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 72px; }
+            .sidebar span { display: none; }
+            .main-content { margin-left: 72px; padding: 16px; }
+            .stat-card .icon { font-size: 30px; }
+            .stat-card .number { font-size: 24px; }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar { width: 60px; padding-top: 12px; }
+            .sidebar h3 { font-size: 16px; margin-bottom: 20px; }
+            .sidebar .nav-link { padding: 10px 8px; font-size: 14px; }
+            .main-content { margin-left: 60px; padding: 12px; }
+            .header h1 { font-size: 20px; }
+            .chart-container { height: 200px; }
+            .chart-container.tall { height: 240px; }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #2a5298;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3><i class="fas fa-landmark"></i> <span>LMS</span></h3>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="/dashboard.html">
+                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+            <a class="nav-link" href="/dashboard.html" onclick="localStorage.setItem('activeTab', 'customers')">
+                <i class="fas fa-users"></i> <span>Customers</span>
+            </a>
+            <a class="nav-link" href="/dashboard.html" onclick="localStorage.setItem('activeTab', 'loans')">
+                <i class="fas fa-hand-holding-usd"></i> <span>Loans</span>
+            </a>
+            <a class="nav-link" href="/dashboard.html" onclick="localStorage.setItem('activeTab', 'apply')">
+                <i class="fas fa-file-alt"></i> <span>Apply Loan</span>
+            </a>
+            <a class="nav-link" href="/dashboard.html" onclick="localStorage.setItem('activeTab', 'emi')">
+                <i class="fas fa-calculator"></i> <span>EMI Calculator</span>
+            </a>
+            <a class="nav-link" href="/dashboard.html" onclick="localStorage.setItem('activeTab', 'repayments')">
+                <i class="fas fa-money-bill-wave"></i> <span>Repayments</span>
+            </a>
+            <a class="nav-link active" href="/analytics.html">
+                <i class="fas fa-chart-line"></i> <span>Analytics</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+            <p class="mb-0 text-muted" style="font-weight: 400;">Real-time insights into your loan portfolio</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row" id="statsRow">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-hand-holding-usd icon" style="color: #27ae60;"></i>
+                    <div class="number" id="totalDisbursed">0</div>
+                    <div class="label">Total Disbursed (MWK)</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-money-bill-wave icon" style="color: #3498db;"></i>
+                    <div class="number" id="totalCollected">0</div>
+                    <div class="label">Total Collected (MWK)</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-clock icon" style="color: #e74c3c;"></i>
+                    <div class="number" id="totalPending">0</div>
+                    <div class="label">Pending Collection (MWK)</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card">
+                    <i class="fas fa-chart-line icon" style="color: #f39c12;"></i>
+                    <div class="number" id="collectionRate">0%</div>
+                    <div class="label">Collection Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <i class="fas fa-chart-pie"></i> Loan Distribution by Type
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="loanTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <i class="fas fa-chart-bar"></i> Loan Status Breakdown
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Loans Chart -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <i class="fas fa-chart-line"></i> Monthly Loan Disbursement
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container tall">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card-custom">
+                    <div class="card-header-custom">
+                        <i class="fas fa-history"></i> Recent Activities
+                    </div>
+                    <div class="card-body">
+                        <div id="activitiesList" style="max-height: 320px; overflow-y: auto;">
+                            <div class="text-center text-muted py-4">
+                                <div class="loading-spinner"></div>
+                                <div class="mt-2">Loading activities...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ----- BASE URL for Express API -----
+        const API_BASE = '/api';
+
+        let loanTypeChart, statusChart, monthlyChart;
+
+        // ----- UTILITY -----
+        function formatMoney(amount) {
+            if (!amount || amount === 0) return '0';
+            return parseFloat(amount).toLocaleString();
+        }
+
+        // ----- GENERATE MOCK DATA (for when backend is not ready) -----
+        function getMockData() {
+            return {
+                collectionSummary: {
+                    totalDisbursed: 1250000,
+                    totalCollected: 875000,
+                    totalPending: 375000,
+                    collectionRate: 70
+                },
+                loanDistribution: {
+                    labels: ['Personal', 'Home', 'Auto', 'Education', 'Business'],
+                    values: [45, 25, 15, 10, 5]
+                },
+                statusBreakdown: {
+                    labels: ['ACTIVE', 'PENDING', 'APPROVED', 'CLOSED', 'REJECTED'],
+                    values: [38, 12, 8, 25, 7]
+                },
+                monthlyLoans: {
+                    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    amounts: [85000, 92000, 78000, 105000, 112000, 98000, 125000, 135000, 118000, 142000, 158000, 165000]
+                },
+                recentActivities: [
+                    { type: 'LOAN_DISBURSED', message: 'Loan #1042 disbursed to John Doe', amount: 50000, customer: 'John Doe', date: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
+                    { type: 'PAYMENT_RECEIVED', message: 'Payment received for Loan #1021', amount: 12500, customer: 'Jane Smith', date: new Date(Date.now() - 1000 * 60 * 25).toISOString() },
+                    { type: 'LOAN_APPROVED', message: 'Loan #1056 approved by Admin', amount: 75000, customer: 'Robert Johnson', date: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
+                    { type: 'LOAN_APPLIED', message: 'New loan application submitted', amount: 30000, customer: 'Mary Williams', date: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString() },
+                    { type: 'PAYMENT_RECEIVED', message: 'Payment received for Loan #1033', amount: 8500, customer: 'David Brown', date: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString() },
+                    { type: 'LOAN_DISBURSED', message: 'Loan #1061 disbursed to Alice Cooper', amount: 45000, customer: 'Alice Cooper', date: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
+                    { type: 'LOAN_APPROVED', message: 'Loan #1048 approved by Admin', amount: 60000, customer: 'Thomas Wilson', date: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() },
+                    { type: 'LOAN_APPLIED', message: 'New loan application submitted', amount: 28000, customer: 'Sarah Davis', date: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString() }
+                ]
+            };
+        }
+
+        // ----- LOAD ALL ANALYTICS -----
+        async function loadAnalytics() {
+            try {
+                // First try to fetch from API
+                await loadFromAPI();
+            } catch (e) {
+                console.warn('API not available, using mock data:', e);
+                // Fallback to mock data
+                loadFromMock();
+            }
+        }
+
+        // ----- LOAD FROM EXPRESS API -----
+        async function loadFromAPI() {
+            await Promise.all([
+                loadCollectionSummaryFromAPI(),
+                loadLoanDistributionFromAPI(),
+                loadStatusBreakdownFromAPI(),
+                loadMonthlyLoansFromAPI(),
+                loadRecentActivitiesFromAPI()
+            ]);
+        }
+
+        // ----- LOAD FROM MOCK DATA -----
+        function loadFromMock() {
+            const mockData = getMockData();
+
+            // Collection Summary
+            document.getElementById('totalDisbursed').innerText = formatMoney(mockData.collectionSummary.totalDisbursed);
+            document.getElementById('totalCollected').innerText = formatMoney(mockData.collectionSummary.totalCollected);
+            document.getElementById('totalPending').innerText = formatMoney(mockData.collectionSummary.totalPending);
+            document.getElementById('collectionRate').innerText = mockData.collectionSummary.collectionRate + '%';
+
+            // Loan Distribution
+            renderLoanTypeChart(mockData.loanDistribution.labels, mockData.loanDistribution.values);
+
+            // Status Breakdown
+            renderStatusChart(mockData.statusBreakdown.labels, mockData.statusBreakdown.values);
+
+            // Monthly Loans
+            renderMonthlyChart(mockData.monthlyLoans.months, mockData.monthlyLoans.amounts);
+
+            // Recent Activities
+            renderActivities(mockData.recentActivities);
+        }
+
+        // ----- COLLECTION SUMMARY (Express: /api/analytics/collection-summary) -----
+        async function loadCollectionSummaryFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/collection-summary`);
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                document.getElementById('totalDisbursed').innerText = formatMoney(data.totalDisbursed);
+                document.getElementById('totalCollected').innerText = formatMoney(data.totalCollected);
+                document.getElementById('totalPending').innerText = formatMoney(data.totalPending);
+                document.getElementById('collectionRate').innerText = (data.collectionRate || 0) + '%';
+            } catch (e) {
+                console.warn('Collection summary API error:', e);
+                throw e;
+            }
+        }
+
+        // ----- LOAN DISTRIBUTION (Express: /api/analytics/loan-distribution) -----
+        async function loadLoanDistributionFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/loan-distribution`);
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                renderLoanTypeChart(data.labels, data.values);
+            } catch (e) {
+                console.warn('Loan distribution API error:', e);
+                throw e;
+            }
+        }
+
+        function renderLoanTypeChart(labels, values) {
+            const ctx = document.getElementById('loanTypeChart').getContext('2d');
+            if (loanTypeChart) loanTypeChart.destroy();
+
+            const colors = ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#2ecc71'];
+
+            loanTypeChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels || ['No Data'],
+                    datasets: [{
+                        data: values || [1],
+                        backgroundColor: colors.slice(0, (labels || []).length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 12, weight: '500' },
+                                padding: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ----- STATUS BREAKDOWN (Express: /api/analytics/status-breakdown) -----
+        async function loadStatusBreakdownFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/status-breakdown`);
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                renderStatusChart(data.labels, data.values);
+            } catch (e) {
+                console.warn('Status breakdown API error:', e);
+                throw e;
+            }
+        }
+
+        function renderStatusChart(labels, values) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            if (statusChart) statusChart.destroy();
+
+            const colors = ['#27ae60', '#3498db', '#f39c12', '#e74c3c', '#95a5a6', '#2ecc71'];
+
+            statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels || ['No Data'],
+                    datasets: [{
+                        label: 'Number of Loans',
+                        data: values || [0],
+                        backgroundColor: colors.slice(0, (labels || []).length),
+                        borderRadius: 8,
+                        barPercentage: 0.6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            stepSize: 1,
+                            title: { display: true, text: 'Count', font: { weight: '500' } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Status', font: { weight: '500' } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // ----- MONTHLY LOANS (Express: /api/analytics/monthly-loans) -----
+        async function loadMonthlyLoansFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/monthly-loans`);
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                renderMonthlyChart(data.months, data.amounts);
+            } catch (e) {
+                console.warn('Monthly loans API error:', e);
+                throw e;
+            }
+        }
+
+        function renderMonthlyChart(months, amounts) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            if (monthlyChart) monthlyChart.destroy();
+
+            monthlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months || ['No Data'],
+                    datasets: [{
+                        label: 'Loan Amount (MWK)',
+                        data: amounts || [0],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.12)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#27ae60',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { weight: '500' },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Amount (MWK)', font: { weight: '500' } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ----- RECENT ACTIVITIES (Express: /api/analytics/recent-activities) -----
+        async function loadRecentActivitiesFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/analytics/recent-activities`);
+                if (!response.ok) throw new Error('API error');
+                const activities = await response.json();
+                renderActivities(activities);
+            } catch (e) {
+                console.warn('Recent activities API error:', e);
+                throw e;
+            }
+        }
+
+        function renderActivities(activities) {
+            const container = document.getElementById('activitiesList');
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-4">No recent activities</div>';
+                return;
+            }
+
+            let html = '';
+            activities.forEach(activity => {
+                const icon = activity.type === 'LOAN_APPLIED' ? 'fa-file-alt' :
+                            activity.type === 'LOAN_APPROVED' ? 'fa-check-circle' :
+                            activity.type === 'LOAN_DISBURSED' ? 'fa-money-bill-wave' :
+                            activity.type === 'PAYMENT_RECEIVED' ? 'fa-hand-holding-usd' :
+                            'fa-bell';
+
+                const color = activity.type === 'LOAN_APPLIED' ? '#3498db' :
+                              activity.type === 'LOAN_APPROVED' ? '#27ae60' :
+                              activity.type === 'LOAN_DISBURSED' ? '#f39c12' :
+                              activity.type === 'PAYMENT_RECEIVED' ? '#2ecc71' :
+                              '#95a5a6';
+
+                html += `
+                    <div class="activity-item d-flex align-items-start">
+                        <i class="fas ${icon}" style="color: ${color}; margin-right: 14px; margin-top: 2px;"></i>
+                        <div style="flex: 1;">
+                            <div><strong>${activity.message || 'Activity'}</strong></div>
+                            <div style="font-size: 13px; color: #555;">
+                                ${activity.amount ? `Amount: MWK ${formatMoney(activity.amount)}` : ''}
+                                ${activity.customer ? ` · ${activity.customer}` : ''}
+                            </div>
+                            <div class="activity-time">${activity.date ? new Date(activity.date).toLocaleString() : ''}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ----- LOAD WITH RETRY -----
+        async function loadWithRetry() {
+            try {
+                await loadAnalytics();
+            } catch (e) {
+                console.warn('Failed to load analytics, using mock data');
+                loadFromMock();
+            }
+        }
+
+        // ----- INITIALIZE -----
+        loadWithRetry();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadWithRetry, 30000);
+
+        // Also try to load from API when the page becomes visible again
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                loadWithRetry();
+            }
+        });
+    </script>
+</body>
+</html>

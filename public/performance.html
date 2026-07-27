@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Dashboard - Loan Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; }
+        
+        .sidebar {
+            width: 260px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .sidebar h3 { text-align: center; margin-bottom: 30px; font-weight: 600; }
+        .sidebar h3 i { margin-right: 10px; }
+        .sidebar .nav-link { color: white; padding: 12px 25px; margin: 5px 0; transition: all 0.3s; font-weight: 500; cursor: pointer; display: block; text-decoration: none; }
+        .sidebar .nav-link:hover { background: rgba(255,255,255,0.1); padding-left: 35px; }
+        .sidebar .nav-link i { margin-right: 12px; width: 20px; }
+        .sidebar .nav-link.active { background: rgba(255,255,255,0.2); border-left: 4px solid #fff; }
+        
+        .main-content { margin-left: 260px; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header h1 { color: #1e3c72; font-size: 24px; }
+        
+        .stat-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.3s; text-align: left; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-card .icon { font-size: 40px; float: right; opacity: 0.7; }
+        .stat-card .number { font-size: 28px; font-weight: bold; color: #1e3c72; margin-bottom: 5px; }
+        .stat-card .label { color: #7f8c8d; font-size: 13px; }
+        
+        .card-custom { background: white; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+        .card-header-custom { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 15px 20px; font-weight: 600; }
+        .card-header-custom i { margin-right: 10px; }
+        .card-body { padding: 20px; }
+        .chart-container { position: relative; height: 300px; }
+        
+        .logout-btn { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar span { display: none; }
+            .main-content { margin-left: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3><i class="fas fa-landmark"></i> <span>LMS</span></h3>
+    <nav class="nav flex-column">
+        <a class="nav-link" href="/dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+        <a class="nav-link active" href="/performance.html"><i class="fas fa-chart-line"></i> <span>Performance</span></a>
+        <a class="nav-link" href="/analytics.html"><i class="fas fa-chart-pie"></i> <span>Analytics</span></a>
+    </nav>
+    <div class="logout-btn">
+        <a class="nav-link" href="/dashboard.html"><i class="fas fa-arrow-left"></i> <span>Back</span></a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> Loan Performance Dashboard</h1>
+        <p class="mb-0 text-muted">Real-time performance metrics and analytics</p>
+    </div>
+    
+    <!-- Stats Summary -->
+    <div class="row" id="statsRow">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="fas fa-hand-holding-usd icon" style="color: #2a5298;"></i>
+                <div class="number" id="totalAmount">MWK 0</div>
+                <div class="label">Total Portfolio</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="fas fa-money-bill-wave icon" style="color: #28a745;"></i>
+                <div class="number" id="collectionRate">0%</div>
+                <div class="label">Collection Rate</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="fas fa-money-bill-wave icon" style="color: #17a2b8;"></i>
+                <div class="number" id="totalDisbursed">MWK 0</div>
+                <div class="label">Total Disbursed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <i class="fas fa-users icon" style="color: #f39c12;"></i>
+                <div class="number" id="totalCustomers">0</div>
+                <div class="label">Total Customers</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-chart-line"></i> Monthly Collection Trend</div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-chart-pie"></i> Loan Type Distribution</div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Metrics -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-tachometer-alt"></i> Performance Metrics</div>
+                <div class="card-body">
+                    <div class="row" id="metricsRow">
+                        <div class="col-md-3"><div class="alert alert-info"><strong>Avg Loan Size:</strong> <span id="avgLoanSize">MWK 0</span></div></div>
+                        <div class="col-md-3"><div class="alert alert-primary"><strong>Avg Interest Rate:</strong> <span id="avgInterestRate">0%</span></div></div>
+                        <div class="col-md-3"><div class="alert alert-warning"><strong>Customers with Loans:</strong> <span id="customersWithLoans">0</span></div></div>
+                        <div class="col-md-3"><div class="alert alert-danger"><strong>Overdue Loans:</strong> <span id="overdueLoans">0</span></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Customers -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card-custom">
+                <div class="card-header-custom"><i class="fas fa-trophy"></i> Top Customers</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Customer Name</th>
+                                    <th>Email</th>
+                                    <th>Total Loans</th>
+                                    <th>Total Amount</th>
+                                    <th>Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topCustomersTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let trendChart = null;
+    let distributionChart = null;
+
+    function formatMoney(amount) {
+        if (!amount || amount === 0) return '0';
+        return parseFloat(amount).toLocaleString();
+    }
+
+    function loadTrendChart(data) {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        if (trendChart) trendChart.destroy();
+        trendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels || [],
+                datasets: [{
+                    label: 'Collection (MWK)',
+                    data: data.data || [],
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        title: { display: true, text: 'Amount (MWK)' },
+                        ticks: { callback: function(value) { return 'MWK ' + value.toLocaleString(); } }
+                    } 
+                }
+            }
+        });
+    }
+
+    function loadDistributionChart(data) {
+        const ctx = document.getElementById('distributionChart').getContext('2d');
+        if (distributionChart) distributionChart.destroy();
+        const colors = ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22'];
+        distributionChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.labels || [],
+                datasets: [{
+                    data: data.data || [],
+                    backgroundColor: colors.slice(0, (data.data || []).length)
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    function loadTopCustomers(customers) {
+        const tbody = document.getElementById('topCustomersTbody');
+        tbody.innerHTML = '';
+        if (!customers || customers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No customers found</td></tr>';
+            return;
+        }
+        customers.forEach((c, index) => {
+            const row = '<tr>' +
+                '<td>' + (index + 1) + '</td>' +
+                '<td><i class="fas fa-user-circle"></i> ' + c.name + '</td>' +
+                '<td>' + c.email + '</td>' +
+                '<td>' + c.totalLoans + '</td>' +
+                '<td>MWK ' + formatMoney(c.totalAmount) + '</td>' +
+                '<td>MWK ' + formatMoney(c.totalPaid) + '</td>' +
+            '</tr>';
+            tbody.innerHTML += row;
+        });
+    }
+
+    async function loadPerformanceData() {
+        try {
+            // Load portfolio summary
+            const summaryRes = await fetch('/api/performance/portfolio-summary');
+            const summary = await summaryRes.json();
+            document.getElementById('totalAmount').innerHTML = 'MWK ' + formatMoney(summary.totalAmount);
+            document.getElementById('collectionRate').innerHTML = summary.collectionRate + '%';
+            document.getElementById('activeLoans').innerHTML = summary.activeLoans;
+            
+            // Load disbursement summary
+            const disburseRes = await fetch('/api/performance/disbursement-summary');
+            const disburseData = await disburseRes.json();
+            document.getElementById('totalDisbursed').innerHTML = 'MWK ' + formatMoney(disburseData.totalDisbursed);
+            
+            // Load metrics
+            const metricsRes = await fetch('/api/performance/metrics');
+            const metrics = await metricsRes.json();
+            document.getElementById('totalCustomers').innerHTML = metrics.totalCustomers;
+            document.getElementById('avgLoanSize').innerHTML = 'MWK ' + formatMoney(metrics.averageLoanSize);
+            document.getElementById('avgInterestRate').innerHTML = (metrics.averageInterestRate || 0).toFixed(2) + '%';
+            document.getElementById('customersWithLoans').innerHTML = metrics.customersWithLoans;
+            document.getElementById('overdueLoans').innerHTML = metrics.overdueLoans;
+            
+            // Load monthly trend
+            const trendRes = await fetch('/api/performance/monthly-trend');
+            const trendData = await trendRes.json();
+            loadTrendChart(trendData);
+            
+            // Load distribution
+            const distRes = await fetch('/api/performance/loan-distribution');
+            const distData = await distRes.json();
+            loadDistributionChart(distData);
+            
+            // Load top customers
+            const topRes = await fetch('/api/performance/top-customers');
+            const topCustomers = await topRes.json();
+            loadTopCustomers(topCustomers);
+            
+        } catch(e) {
+            console.error('Error loading performance data:', e);
+        }
+    }
+    
+    // Load data on page load
+    loadPerformanceData();
+    
+    // Refresh every 30 seconds
+    setInterval(loadPerformanceData, 30000);
+</script>
+</body>
+</html>
